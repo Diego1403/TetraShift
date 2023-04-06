@@ -1,0 +1,43 @@
+import pygame
+from enum import Enum
+
+
+BLACK = (0, 0, 0)
+WHITE = (200, 200, 200)
+GREEN = (0, 255, 0)
+RED = (255, 0, 0)
+PINK = (255, 31, 139)
+YELLOW = (255, 255, 0)
+BLUE = (0, 0, 255)
+ORANGE = (255, 165, 0)
+PURPLE = (128, 0, 128)
+BROWN = (165, 42, 42)
+DARK_GREEN = (0, 100, 0)
+DARK_BLUE = (0, 0, 128)
+DARK_RED = (139, 0, 0)
+LIGHT_BLUE = (173, 216, 230)
+LIGHT_GREEN = (144, 238, 144)
+
+
+class Direction(Enum):
+    UP = "2"
+    DOWN = "0"
+    LEFT = "-1"
+    RIGHT = "1"
+    ROTATE = "3"
+
+
+NBOXES_VERTICAL = 15
+NBOXES_HORIZONTAL = 10
+MARGIN = 5
+BOX_HEIGHT = 25
+BOX_WIDTH = 25
+BOX_SIZE = BOX_HEIGHT
+
+WINDOW_HEIGHT = (BOX_HEIGHT + MARGIN) * NBOXES_VERTICAL
+WINDOW_WIDTH = (BOX_WIDTH + MARGIN) * NBOXES_HORIZONTAL
+
+global SCREEN, ClOCK
+SCREEN = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+CLOCK = pygame.time.Clock()
+pygame.font.init()

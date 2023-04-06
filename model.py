@@ -47,16 +47,8 @@ class Gamelogic:
             if pos.y < NBOXES_VERTICAL:
                 self.Grid[pos.x][pos.y] = 0
 
-    def move_events(self):
-        # We reverte past grid positions to 0
-        self.clearLastPos()
-        # check if you can continue down
-        # If we cant go down anymore we change the current piece to a new one
-
+    def can_go_down(self, blocks):
         lowestY = self.currentPiece.getLowestHeight()
-
-        blocks = self.currentPiece.blocks
-
         canGoDown = True
         # We check if we can go down
         if lowestY == NBOXES_VERTICAL - 1:
@@ -69,43 +61,58 @@ class Gamelogic:
                         canGoDown = False
                         self.setNewPiece()
                         break
+        return canGoDown
 
-        if canGoDown:
-            self.currentPiece.move_down()
-
-        # move piece down
-        if self.dir == Direction.LEFT:
-
-            canGoLeft = True
-
+    def can_go_left(self, blocks):
+        mostLeft = self.currentPiece.getMostLeft()
+        canGoLeft = True
+        if mostLeft == 0:
+            canGoLeft = False
+        else:
             for pos in blocks:
-                if pos.x > 2:
-                    if (
-                        self.currentPiece.getMostLeft() < 1
-                        and self.Grid[pos.x - 1][pos.y] != 0
-                    ):
+                if pos.x > 0:
+                    if self.Grid[pos.x - 1][pos.y] != 0:
                         canGoLeft = False
-            if canGoLeft:
-                self.currentPiece.move_left()
+                        break
+        return canGoLeft
 
-        if self.dir == Direction.RIGHT:
-            canGoRight = True
+    def can_go_right(self, blocks):
+        mostRight = self.currentPiece.getMostRight()
+        canGoRight = True
+        if mostRight == NBOXES_HORIZONTAL - 1:
+            canGoRight = False
+        else:
             for pos in blocks:
                 if pos.x < NBOXES_HORIZONTAL - 1:
-                    if (
-                        self.currentPiece.getMostRight() < NBOXES_HORIZONTAL - 2
-                        and self.Grid[pos.x][pos.y] != 0
-                    ):
+                    if self.Grid[pos.x + 1][pos.y] != 0:
                         canGoRight = False
-            if canGoRight:
+                        break
+        return canGoRight
+
+    def move_events(self):
+        # We reverte past grid positions to 0
+        self.clearLastPos()
+        # check if you can continue down
+        # If we cant go down anymore we change the current piece to a new one
+        blocks = self.currentPiece.blocks
+        if self.can_go_down(blocks):
+            self.currentPiece.move_down()
+
+        if self.dir == Direction.LEFT:
+            if self.can_go_left(blocks):
+                self.currentPiece.move_left()
+                self.dir = Direction.DOWN
+
+        if self.dir == Direction.RIGHT:
+            if self.can_go_right(blocks):
                 self.currentPiece.move_right()
+                self.dir = Direction.DOWN
 
         if self.dir == Direction.ROTATE:
             self.clearLastPos()
             self.currentPiece.rotate()
             self.currentPiece.move_down()
-
-        self.dir = Direction.DOWN
+            self.dir = Direction.DOWN
 
     def setNewPiece(self):
         for pos in self.currentPiece.blocks:

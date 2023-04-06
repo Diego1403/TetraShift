@@ -15,7 +15,8 @@ class Gamelogic:
             self.Grid.append([])
             for y in range(NBOXES_VERTICAL):
                 self.Grid[x].append(0)
-        newselected = random.choice(list(tetris_data.items()))[1].copy()
+        self.data = tetris_data().items
+        newselected = random.choice(list(self.data.items()))[1]
         newpiece = copy.copy(newselected[0])
         newcolor = copy.copy(newselected[1])
         self.currentPiece = Tetris_piece(newpiece, newcolor)
@@ -25,6 +26,7 @@ class Gamelogic:
         self.controller = TetrisController(self, self.view)
         self.gameOver = False
         self.dir = Direction.DOWN
+
         pygame.init()
         SCREEN.fill(BLACK)
 
@@ -117,7 +119,9 @@ class Gamelogic:
     def setNewPiece(self):
         for pos in self.currentPiece.blocks:
             self.Grid[pos.x][pos.y] = self.currentPiece.color
-        newselected = random.choice(list(tetris_data.items()))[1]
+        del self.currentPiece
+        data = tetris_data().items
+        newselected = random.choice(list(data.items()))[1]
         newpiece = copy.copy(newselected[0])
         newcolor = copy.copy(newselected[1])
         self.currentPiece = Tetris_piece(newpiece, newcolor)
@@ -245,12 +249,14 @@ class Block:
         return rep
 
 
-tetris_data = {
-    "I": [[Block(6, 0), Block(5, 0), Block(5, 1), Block(4, 1)], BLUE],
-    "Z": [[Block(5, 0), Block(6, 0), Block(6, 1), Block(7, 1)], YELLOW],
-    "O": [[Block(0, 0), Block(0, 1), Block(0, 2), Block(0, 3)], PINK],
-    "J": [[Block(5, 0), Block(6, 0), Block(5, 1), Block(6, 1)], GREEN],
-    "L": [[Block(5, 0), Block(6, 0), Block(7, 0), Block(5, 1)], BLUE],
-    "T": [[Block(5, 0), Block(6, 0), Block(7, 0), Block(6, 1)], ORANGE],
-    "S": [[Block(5, 0), Block(6, 0), Block(6, 1), Block(7, 1)], RED],
-}
+class tetris_data:
+    def __init__(self):
+        self.items = {
+            "I": [[Block(6, 0), Block(5, 0), Block(5, 1), Block(4, 1)], BLUE],
+            "Z": [[Block(5, 0), Block(6, 0), Block(6, 1), Block(7, 1)], YELLOW],
+            "O": [[Block(0, 0), Block(0, 1), Block(0, 2), Block(0, 3)], PINK],
+            "J": [[Block(5, 0), Block(6, 0), Block(5, 1), Block(6, 1)], GREEN],
+            "L": [[Block(5, 0), Block(6, 0), Block(7, 0), Block(5, 1)], BLUE],
+            "T": [[Block(5, 0), Block(6, 0), Block(7, 0), Block(6, 1)], ORANGE],
+            "S": [[Block(5, 0), Block(6, 0), Block(6, 1), Block(7, 1)], RED],
+        }

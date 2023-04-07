@@ -8,64 +8,79 @@ class GameDisplay:
         self.currentPiece = currentPiece
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
         pygame.display.set_caption("Tetris")
+        self.titleFont = pygame.font.SysFont("comicsansms", 50)
         self.font = pygame.font.SysFont("comicsansms", 30)
         self.gameOver = False
         self.dir = Direction.DOWN
+        self.scoreFont = pygame.font.SysFont("comicsansms", 30)
 
     def draw(self, board, currentPiece):
-        self.screen.fill(BLACK)
+
+        title = self.titleFont.render("Tetris", True, WHITE)
+        self.screen.fill(GREEN)
+        self.drawScreen()
         self.drawGrid()
         self.drawCurrentPiece(currentPiece)
-        # self.drawBoard(board)
-        # self.drawScore()
+        self.screen.blit(title, (WINDOW_WIDTH / 2 - title.get_width() / 2, 20))
+        self.drawScoreboard()
+        pygame.display.update()
         pygame.display.flip()
 
     def drawGrid(self):
+        x_offset = (WINDOW_WIDTH - GAME_WIDTH) // 2
+        y_offset = 0
         for x in range(NBOXES_HORIZONTAL):
             for y in range(NBOXES_VERTICAL):
 
                 if self.board.grid[x][y] == 0:
-                    color = WHITE
-                    pygame.draw.rect(
+                    color = BLACK
+                    rect = pygame.draw.rect(
                         SCREEN,
                         color,
                         [
-                            (MARGIN + BOX_WIDTH) * x + MARGIN,
-                            (MARGIN + BOX_HEIGHT) * y + MARGIN,
+                            x_offset + (MARGIN + BOX_WIDTH) * x + MARGIN,
+                            y_offset + (MARGIN + BOX_HEIGHT) * y + MARGIN,
                             BOX_HEIGHT,
                             BOX_WIDTH,
                         ],
                     )
                 else:
                     color = self.board.grid[x][y]
-                    pygame.draw.rect(
+                    rect = pygame.draw.rect(
                         SCREEN,
                         color,
                         [
-                            (MARGIN + BOX_WIDTH) * x + MARGIN,
-                            (MARGIN + BOX_HEIGHT) * y + MARGIN,
+                            x_offset + (MARGIN + BOX_WIDTH) * x + MARGIN,
+                            y_offset + (MARGIN + BOX_HEIGHT) * y + MARGIN,
                             BOX_HEIGHT,
                             BOX_WIDTH,
                         ],
                     )
 
     def drawCurrentPiece(self, currentPiece):
+        x_offset = (WINDOW_WIDTH - GAME_WIDTH) // 2
+        y_offset = 0
         for pos in currentPiece.blocks:
             pygame.draw.rect(
                 SCREEN,
                 currentPiece.color,
                 [
-                    (MARGIN + BOX_WIDTH) * pos.x + MARGIN,
-                    (MARGIN + BOX_HEIGHT) * pos.y + MARGIN,
+                    x_offset + (MARGIN + BOX_WIDTH) * pos.x + MARGIN,
+                    y_offset + (MARGIN + BOX_HEIGHT) * pos.y + MARGIN,
                     BOX_HEIGHT,
                     BOX_WIDTH,
                 ],
             )
 
-    def drawScore(self):
-        pass
-        # score = self.font.render("Score: " + str(self.board.score), True, WHITE)
-        # self.screen.blit(score, (WINDOW_WIDTH - 150, 10))
+    def drawScreen(self):
+        pygame.draw.rect(self.screen, WHITE, [0, 0, WINDOW_WIDTH, WINDOW_HEIGHT], 5)
+
+    def drawScoreboard(self):
+        font = pygame.font.SysFont("comicsansms", 32)
+        text = font.render("Score: {}".format(4), True, (255, 255, 255))
+        text_rect = text.get_rect()
+        text_rect.center = (SCOREBOARD_WIDTH, SCOREBOARD_HEIGHT)
+        SCREEN.blit(text, text_rect)
 
     def gameOver(self):
         self.gameOver = True
@@ -75,4 +90,12 @@ class GameDisplay:
         pygame.display.flip()
 
     def checkForGameOver(self):
+        pass
+
+
+class GameSound:
+    def __init__(self):
+        pass
+
+    def play(self, sound):
         pass

@@ -35,19 +35,7 @@ class GameDisplay:
         y_offset = 0
         for x in range(NBOXES_HORIZONTAL):
             for y in range(NBOXES_VERTICAL):
-                if self.board.grid[x][y] == 0:
-                    color = BLACK
-                    rect = pygame.draw.rect(
-                        SCREEN,
-                        color,
-                        [
-                            x_offset + (MARGIN + BOX_WIDTH) * x + MARGIN,
-                            y_offset + (MARGIN + BOX_HEIGHT) * y + MARGIN,
-                            BOX_HEIGHT,
-                            BOX_WIDTH,
-                        ],
-                    )
-                else:
+                if self.board.grid[x][y] != 0:
                     color = self.board.grid[x][y]
                     rect = pygame.draw.rect(
                         SCREEN,

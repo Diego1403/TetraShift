@@ -1,5 +1,5 @@
 import pygame
-from model import Gamelogic
+from model.Gamelogic import Gamelogic
 
 gamelogic = Gamelogic()
 gamelogic.play()

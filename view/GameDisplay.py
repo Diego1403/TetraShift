@@ -1,5 +1,6 @@
-from constants import *
 import pygame
+
+from data.constants import *
 
 
 class GameDisplay:
@@ -92,12 +93,4 @@ class GameDisplay:
         pygame.display.flip()
 
     def checkForGameOver(self):
-        pass
-
-
-class GameSound:
-    def __init__(self):
-        pass
-
-    def play(self, sound):
         pass

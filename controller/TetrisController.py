@@ -1,5 +1,6 @@
 import pygame
-from constants import Direction
+
+from data.constants import Direction
 
 
 class TetrisController:

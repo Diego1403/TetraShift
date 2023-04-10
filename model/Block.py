@@ -20,7 +20,7 @@ class Block:
         self.x = self.x - 1
 
     def GoDown(self):
-        self.y = self.y + 1
+        self.y = self.y + 0.1
 
     def __str__(self):
         rep = "(" + str(self.x) + " , " + str(self.y) + ")"

@@ -1,3 +1,4 @@
+import math
 from data.constants import NBOXES_HORIZONTAL
 
 
@@ -22,9 +23,9 @@ class Tetris_piece:
     def getLowestHeight(self):
         lowest_pos = 0
         for block in self.blocks:
-            if block.y > lowest_pos:
-                lowest_pos = block.y
-        return int(lowest_pos)
+            if block.getY() > lowest_pos:
+                lowest_pos = block.getY()
+        return math.ceil(lowest_pos)
 
     def getMostLeft(self):
         mostLeft_pos = NBOXES_HORIZONTAL
@@ -42,10 +43,10 @@ class Tetris_piece:
 
     def rotate(self):
         center_x = sum([block.x for block in self.blocks]) // len(self.blocks)
-        center_y = sum([block.y for block in self.blocks]) // len(self.blocks)
+        center_y = sum([block.getY() for block in self.blocks]) // len(self.blocks)
 
         for block in self.blocks:
-            new_x = center_x + (block.y - center_y)
+            new_x = center_x + (block.getY() - center_y)
             new_y = center_y - (block.x - center_x)
             block.x = new_x
             block.y = new_y

@@ -43,14 +43,14 @@ class Gamelogic:
             self.checkForFullRows()
             self.view.draw(self.board.grid, self.currentPiece)
             pygame.display.update()
-            CLOCK.tick(3)
+            CLOCK.tick(60)
             pygame.display.flip()
 
     def clearLastPos(self):
         blocks = self.currentPiece.blocks
         for pos in blocks:
-            if pos.y < NBOXES_VERTICAL:
-                self.Grid[pos.x][pos.y] = 0
+            if pos.getY() < NBOXES_VERTICAL:
+                self.Grid[pos.x][pos.getY()] = 0
 
     def can_go_down(self, blocks):
         lowestY = self.currentPiece.getLowestHeight()
@@ -61,8 +61,8 @@ class Gamelogic:
             self.setNewPiece()
         else:
             for pos in blocks:
-                if pos.y < NBOXES_VERTICAL - 2:
-                    if self.Grid[pos.x][pos.y + 1] != 0:
+                if pos.getY() < NBOXES_VERTICAL - 2:
+                    if self.Grid[pos.x][pos.getY() + 1] != 0:
                         canGoDown = False
                         self.setNewPiece()
                         break
@@ -76,7 +76,7 @@ class Gamelogic:
         else:
             for pos in blocks:
                 if pos.x > 0:
-                    if self.Grid[pos.x - 1][pos.y] != 0:
+                    if self.Grid[pos.x - 1][pos.getY()] != 0:
                         canGoLeft = False
                         break
         return canGoLeft
@@ -89,7 +89,7 @@ class Gamelogic:
         else:
             for pos in blocks:
                 if pos.x < NBOXES_HORIZONTAL - 1:
-                    if self.Grid[pos.x + 1][pos.y] != 0:
+                    if self.Grid[pos.x + 1][pos.getY()] != 0:
                         canGoRight = False
                         break
         return canGoRight
@@ -121,7 +121,7 @@ class Gamelogic:
 
     def setNewPiece(self):
         for pos in self.currentPiece.blocks:
-            self.Grid[pos.x][pos.y] = self.currentPiece.color
+            self.Grid[pos.x][pos.getY()] = self.currentPiece.color
         del self.currentPiece
         data = tetris_data().items
         newselected = random.choice(list(data.items()))[1]

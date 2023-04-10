@@ -33,8 +33,12 @@ class GameDisplay:
     def drawGrid(self):
         x_offset = (WINDOW_WIDTH - GAME_WIDTH) // 2
         y_offset = 0
+        grid = pygame.image.load("Images/bg_grid.jpg")
+        grid = pygame.transform.scale(grid, (GAME_WIDTH, GAME_HEIGHT))
+        self.screen.blit(grid, (x_offset, y_offset))
         for x in range(NBOXES_HORIZONTAL):
             for y in range(NBOXES_VERTICAL):
+                # draw all pieces
                 if self.board.grid[x][y] != 0:
                     color = self.board.grid[x][y]
                     rect = pygame.draw.rect(

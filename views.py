@@ -13,11 +13,14 @@ class GameDisplay:
         self.gameOver = False
         self.dir = Direction.DOWN
         self.scoreFont = pygame.font.SysFont("comicsansms", 30)
+        self.bg_img = pygame.image.load("Images/bg.jpg")
+        self.bg_img = pygame.transform.scale(self.bg_img, (WINDOW_WIDTH, WINDOW_HEIGHT))
 
     def draw(self, board, currentPiece):
+        # we draw the background
+        self.screen.blit(self.bg_img, (0, 0))
 
         title = self.titleFont.render("Tetris", True, WHITE)
-        self.screen.fill(GREEN)
         self.drawScreen()
         self.drawGrid()
         self.drawCurrentPiece(currentPiece)
@@ -31,7 +34,6 @@ class GameDisplay:
         y_offset = 0
         for x in range(NBOXES_HORIZONTAL):
             for y in range(NBOXES_VERTICAL):
-
                 if self.board.grid[x][y] == 0:
                     color = BLACK
                     rect = pygame.draw.rect(

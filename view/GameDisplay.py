@@ -8,24 +8,21 @@ class GameDisplay:
         self.board = board
         self.currentPiece = currentPiece
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
-        pygame.display.set_caption("Tetris")
-        self.titleFont = pygame.font.SysFont("comicsansms", 50)
         self.font = pygame.font.SysFont("comicsansms", 30)
         self.gameOver = False
+        self.score = 0
         self.dir = Direction.DOWN
         self.scoreFont = pygame.font.SysFont("comicsansms", 30)
-        self.bg_img = pygame.image.load("Images/bg.jpg")
+        self.bg_img = pygame.image.load("Images/bg.png")
         self.bg_img = pygame.transform.scale(self.bg_img, (WINDOW_WIDTH, WINDOW_HEIGHT))
 
     def draw(self, board, currentPiece):
         # we draw the background
         self.screen.blit(self.bg_img, (0, 0))
 
-        title = self.titleFont.render("Tetris", True, WHITE)
         self.drawScreen()
         self.drawGrid()
         self.drawCurrentPiece(currentPiece)
-        self.screen.blit(title, (WINDOW_WIDTH / 2 - title.get_width() / 2, 20))
         self.drawScoreboard()
         pygame.display.update()
         pygame.display.flip()
@@ -33,7 +30,7 @@ class GameDisplay:
     def drawGrid(self):
         x_offset = (WINDOW_WIDTH - GAME_WIDTH) // 2
         y_offset = 0
-        grid = pygame.image.load("Images/bg_grid.jpg")
+        grid = pygame.image.load("Images/bg_grid.png")
         grid = pygame.transform.scale(grid, (GAME_WIDTH, GAME_HEIGHT))
         self.screen.blit(grid, (x_offset, y_offset))
         for x in range(NBOXES_HORIZONTAL):
@@ -71,11 +68,14 @@ class GameDisplay:
         pygame.draw.rect(self.screen, WHITE, [0, 0, WINDOW_WIDTH, WINDOW_HEIGHT], 5)
 
     def drawScoreboard(self):
-        font = pygame.font.SysFont("comicsansms", 32)
-        text = font.render("Score: {}".format(4), True, (255, 255, 255))
+        x_offset = 120
+        y_offset = 120
+        pygame.draw.rect(self.screen, WHITE, [0, 0, 50, WINDOW_HEIGHT], 5)
+        font = pygame.font.SysFont("comicsansms", 16)
+        text = font.render("{}".format(self.score), True, (255, 255, 255))
         text_rect = text.get_rect()
         text_rect.center = (SCOREBOARD_WIDTH, SCOREBOARD_HEIGHT)
-        SCREEN.blit(text, text_rect)
+        self.screen.blit(text, (x_offset, y_offset))
 
     def gameOver(self):
         self.gameOver = True
@@ -83,6 +83,9 @@ class GameDisplay:
         text = self.font.render("Game Over", True, WHITE)
         self.screen.blit(text, (WINDOW_WIDTH / 2 - 50, WINDOW_HEIGHT / 2 - 50))
         pygame.display.flip()
+
+    def updateScore(self, score):
+        self.score = score
 
     def checkForGameOver(self):
         pass

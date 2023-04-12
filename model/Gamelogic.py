@@ -29,6 +29,7 @@ class Gamelogic:
         self.controller = TetrisController(self, self.view)
         self.gameOver = False
         self.dir = Direction.DOWN
+        self.score = 0
 
         pygame.init()
         SCREEN.fill(BLACK)
@@ -41,6 +42,7 @@ class Gamelogic:
             self.handle_event()
             self.move_events()
             self.checkForFullRows()
+            self.view.updateScore(self.score)
             self.view.draw(self.board.grid, self.currentPiece)
             pygame.display.update()
             CLOCK.tick(60)
@@ -140,6 +142,7 @@ class Gamelogic:
                     break
             if rowComplete:
                 rowsToDelete.append(y)
+                self.score += 10
 
         # Delete the completed rows and shift the ones above down
         for y in rowsToDelete:

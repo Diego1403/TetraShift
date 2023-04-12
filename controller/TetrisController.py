@@ -12,7 +12,12 @@ class TetrisController:
         self.gamelogic = gamelogic
         self.view = view
 
+        self.eye_detection = False
         # gaze tracking init
+        if self.eye_detection:
+            self.init_gaze_tracking()
+
+    def init_gaze_tracking(self):
         self.cap = cv2.VideoCapture(0)
         self.detector = dlib.get_frontal_face_detector()
         # used to detect facial landmarks
@@ -21,59 +26,11 @@ class TetrisController:
 
     def handle_event(self):
         # handle gaze input
-        self._, self.frame = self.cap.read()
+
         # we use gray scale to save computation power
-        self.gray = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
-        self.faces = self.detector(self.gray)
-        for face in self.faces:
-            landmarks = self.predictor(self.gray, face)
-            # detect blinking
-            # the numbers are the index of the facial landmarks
-            left_eye_ratio = self.get_blinking_ratio(
-                [36, 37, 38, 39, 40, 41], landmarks
-            )
-            right_eye_ratio = self.get_blinking_ratio(
-                [42, 43, 44, 45, 46, 47], landmarks
-            )
-            rotate = False
-            if right_eye_ratio > 6:
-                rotate = True
-            if left_eye_ratio > 6:
-                rotate = True
-            if rotate:
-                self.gamelogic.dir = Direction.ROTATE
 
-            # gaze detection
-            # the numbers are the index of the facial landmarks , we want to get all of the points in the left eye and draw a polygon around it
-
-            # Gaze detection
-            gaze_ratio_left_eye = self.get_gaze_ratio(
-                [36, 37, 38, 39, 40, 41], landmarks
-            )
-            gaze_ratio_right_eye = self.get_gaze_ratio(
-                [42, 43, 44, 45, 46, 47], landmarks
-            )
-            gaze_ratio = (gaze_ratio_right_eye + gaze_ratio_left_eye) / 2
-            new_frame = np.zeros((500, 500, 3), np.uint8)
-            print(gaze_ratio)
-            if gaze_ratio <= 0.7:
-                cv2.putText(
-                    self.frame, "RIGHT", (50, 100), self.font, 2, (0, 0, 255), 3
-                )
-                self.gamelogic.dir = Direction.RIGHT
-
-                new_frame[:] = (0, 0, 255)
-            elif 0.7 < gaze_ratio < 2.5:
-                cv2.putText(
-                    self.frame, "CENTER", (50, 100), self.font, 2, (0, 0, 255), 3
-                )
-            else:
-                new_frame[:] = (255, 0, 0)
-                cv2.putText(self.frame, "LEFT", (50, 100), self.font, 2, (0, 0, 255), 3)
-                self.gamelogic.dir = Direction.LEFT
-        cv2.imshow("Frame", self.frame)
-        key = cv2.waitKey(1)
-        # handle manual input
+        if self.eye_detection:
+            self.gamelogic.dir = self.check_gaze_direction()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.gamelogic.gameOver = True
@@ -89,6 +46,62 @@ class TetrisController:
                 if event.key == pygame.K_DOWN:
                     # move shape down and force move events
                     self.gamelogic.dir = Direction.DOWN
+
+    def check_gaze_direction(self):
+        self._, self.frame = self.cap.read()
+        self.gray = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
+        self.faces = self.detector(self.gray)
+        d = Direction.DOWN
+        for face in self.faces:
+            landmarks = self.predictor(self.gray, face)
+            # detect blinking
+            # the numbers are the index of the facial landmarks
+            left_eye_ratio = self.get_blinking_ratio(
+                [36, 37, 38, 39, 40, 41], landmarks
+            )
+            right_eye_ratio = self.get_blinking_ratio(
+                [42, 43, 44, 45, 46, 47], landmarks
+            )
+            rotate = False
+            if right_eye_ratio + left_eye_ratio / 2 > 6:
+                d = Direction.ROTATE
+                break
+
+            # gaze detection
+            # the numbers are the index of the facial landmarks , we want to get all of the points in the left eye and draw a polygon around it
+
+            # Gaze detection
+            gaze_ratio_left_eye = self.get_gaze_ratio(
+                [36, 37, 38, 39, 40, 41], landmarks
+            )
+            gaze_ratio_right_eye = self.get_gaze_ratio(
+                [42, 43, 44, 45, 46, 47], landmarks
+            )
+            gaze_ratio = (gaze_ratio_right_eye + gaze_ratio_left_eye) / 2
+            new_frame = np.zeros((500, 500, 3), np.uint8)
+            print(gaze_ratio)
+            if gaze_ratio <= 0.35:
+                cv2.putText(
+                    self.frame, "RIGHT", (50, 100), self.font, 2, (0, 0, 255), 3
+                )
+                d = Direction.RIGHT
+                break
+
+                new_frame[:] = (0, 0, 255)
+            elif 0.5 < gaze_ratio < 3:
+                cv2.putText(
+                    self.frame, "CENTER", (50, 100), self.font, 2, (0, 0, 255), 3
+                )
+                d = Direction.DOWN
+
+            else:
+                new_frame[:] = (255, 0, 0)
+                cv2.putText(self.frame, "LEFT", (50, 100), self.font, 2, (0, 0, 255), 3)
+                d = Direction.LEFT
+                break
+
+        cv2.imshow("Frame", self.frame)
+        return d
 
     # we divide the left side white pixels by the right side white pixels
     def get_gaze_ratio(self, eye_points, facial_landmarks):

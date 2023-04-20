@@ -17,9 +17,12 @@ class GameDisplay:
         self.bg_img = pygame.transform.scale(self.bg_img, (WINDOW_WIDTH, WINDOW_HEIGHT))
         self.viewtype = ViewType.START
         self.button_image = pygame.image.load("Images/start_button.png")
-        self.button_image = pygame.transform.scale(self.button_image, (200, 50))
+        self.button_image = pygame.transform.scale(
+            self.button_image,
+            (STARTBUTTONWIDTH, STARTBUTTONHEIGHT),
+        )
 
-    def draw(self, board, currentPiece, lightmode=True):
+    def draw(self, currentPiece, lightmode=True):
         if self.viewtype == ViewType.START:
             self.drawStartScreen(lightmode)
         elif self.viewtype == ViewType.GAME:
@@ -98,14 +101,16 @@ class GameDisplay:
         self.drawGrid()
         self.drawCurrentPiece(currentPiece)
         self.drawScoreboard()
-        pygame.display.update()
-        pygame.display.flip()
 
     def drawStartScreen(self, lightmode=True):
         self.screen.blit(self.bg_img, (0, 0))
-        self.screen.blit(self.button_image, (WINDOW_HEIGHT - 50, WINDOW_WIDTH / 2))
-        pygame.display.update()
-        pygame.display.flip()
+        self.screen.blit(
+            self.button_image,
+            (
+                (WINDOW_WIDTH // 2) - STARTBUTTONWIDTH // 2,
+                2 * WINDOW_HEIGHT // 3 + STARTBUTTONHEIGHT // 2,
+            ),
+        )
 
     def drawGameOverScreen(self, lightmode=True):
         if lightmode:
@@ -134,8 +139,6 @@ class GameDisplay:
             )
 
         self.screen.blit(self.bg_img, (0, 0))
-        pygame.display.update()
-        pygame.display.flip()
 
     def drawGrid(self):
         x_offset = (WINDOW_WIDTH - GAME_WIDTH) // 2
@@ -192,7 +195,6 @@ class GameDisplay:
         self.screen.fill(BLACK)
         text = self.font.render("Game Over", True, WHITE)
         self.screen.blit(text, (WINDOW_WIDTH / 2 - 50, WINDOW_HEIGHT / 2 - 50))
-        pygame.display.flip()
 
     def updateScore(self, score):
         self.score = score

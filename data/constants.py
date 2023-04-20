@@ -19,6 +19,13 @@ LIGHT_BLUE = (173, 216, 230)
 LIGHT_GREEN = (144, 238, 144)
 
 
+class ViewType(Enum):
+    GAME = "0"
+    PAUSE = "1"
+    GAME_OVER = "2"
+    START = "3"
+
+
 class Direction(Enum):
     UP = "2"
     DOWN = "0"

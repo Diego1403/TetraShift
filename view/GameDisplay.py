@@ -13,17 +13,127 @@ class GameDisplay:
         self.score = 0
         self.dir = Direction.DOWN
         self.scoreFont = pygame.font.SysFont("comicsansms", 30)
-        self.bg_img = pygame.image.load("Images/bg.png")
+        self.bg_img = pygame.image.load("Images/bg_light.png")
         self.bg_img = pygame.transform.scale(self.bg_img, (WINDOW_WIDTH, WINDOW_HEIGHT))
+        self.viewtype = ViewType.START
+        self.button_image = pygame.image.load("Images/start_button.png")
+        self.button_image = pygame.transform.scale(self.button_image, (200, 50))
 
-    def draw(self, board, currentPiece):
-        # we draw the background
+    def draw(self, board, currentPiece, lightmode=True):
+        if self.viewtype == ViewType.START:
+            self.drawStartScreen(lightmode)
+        elif self.viewtype == ViewType.GAME:
+            self.drawGame(currentPiece, lightmode)
+        elif self.viewtype == ViewType.GAMEOVER:
+            self.drawGameOverScreen(lightmode)
+        elif self.viewtype == ViewType.PAUSE:
+            self.drawPauseScreen(lightmode)
+
+    def setViewType(self, viewtype, lightmode):
+        self.lightmode = lightmode
+        self.viewtype = viewtype
+        if viewtype == ViewType.START:
+            self.viewtype = ViewType.START
+            if lightmode:
+                self.lightmode = True
+                self.bg_img = pygame.image.load("Images/bg_start_light.png")
+                self.bg_img = pygame.transform.scale(
+                    self.bg_img, (WINDOW_WIDTH, WINDOW_HEIGHT)
+                )
+            else:
+                self.lightmode = False
+                self.bg_img = pygame.image.load("Images/bg_start_dark.png")
+                self.bg_img = pygame.transform.scale(
+                    self.bg_img, (WINDOW_WIDTH, WINDOW_HEIGHT)
+                )
+        elif viewtype == ViewType.GAME:
+            if lightmode:
+                self.lightmode = True
+                self.bg_img = pygame.image.load("Images/bg_light.png")
+                self.bg_img = pygame.transform.scale(
+                    self.bg_img, (WINDOW_WIDTH, WINDOW_HEIGHT)
+                )
+            else:
+                self.lightmode = False
+                self.bg_img = pygame.image.load("Images/bg_dark.png")
+                self.bg_img = pygame.transform.scale(
+                    self.bg_img, (WINDOW_WIDTH, WINDOW_HEIGHT)
+                )
+        elif viewtype == ViewType.GAMEOVER:
+            if lightmode:
+                self.lightmode = True
+                self.bg_img = pygame.image.load("Images/gameOver_light.png")
+                self.bg_img = pygame.transform.scale(
+                    self.bg_img, (WINDOW_WIDTH, WINDOW_HEIGHT)
+                )
+            else:
+                self.lightmode = False
+                self.bg_img = pygame.image.load("Images/gameOver_dark.png")
+                self.bg_img = pygame.transform.scale(
+                    self.bg_img, (WINDOW_WIDTH, WINDOW_HEIGHT)
+                )
+        elif viewtype == ViewType.PAUSE:
+            if lightmode:
+                self.lightmode = True
+                self.bg_img = pygame.image.load("Images/bg_pause_light.png")
+                self.bg_img = pygame.transform.scale(
+                    self.bg_img, (WINDOW_WIDTH, WINDOW_HEIGHT)
+                )
+            else:
+                self.lightmode = False
+                self.bg_img = pygame.image.load("Images/bg_pause_dark.png")
+                self.bg_img = pygame.transform.scale(
+                    self.bg_img, (WINDOW_WIDTH, WINDOW_HEIGHT)
+                )
+
+        elif viewtype == ViewType.GAMEOVER:
+            pass
+        elif viewtype == ViewType.PAUSE:
+            self.drawPauseScreen(lightmode)
+        self.currentViewType = viewtype
+
+    def drawGame(self, currentPiece, lightmode=True):
         self.screen.blit(self.bg_img, (0, 0))
-
         self.drawScreen()
         self.drawGrid()
         self.drawCurrentPiece(currentPiece)
         self.drawScoreboard()
+        pygame.display.update()
+        pygame.display.flip()
+
+    def drawStartScreen(self, lightmode=True):
+        self.screen.blit(self.bg_img, (0, 0))
+        self.screen.blit(self.button_image, (WINDOW_HEIGHT - 50, WINDOW_WIDTH / 2))
+        pygame.display.update()
+        pygame.display.flip()
+
+    def drawGameOverScreen(self, lightmode=True):
+        if lightmode:
+            self.bg_img = pygame.image.load("Images/gameOver_light.png")
+            self.bg_img = pygame.transform.scale(
+                self.bg_img, (WINDOW_WIDTH, WINDOW_HEIGHT)
+            )
+        else:
+            self.bg_img = pygame.image.load("Images/gameOver_dark.png")
+            self.bg_img = pygame.transform.scale(
+                self.bg_img, (WINDOW_WIDTH, WINDOW_HEIGHT)
+            )
+
+        self.screen.blit(self.bg_img, (0, 0))
+
+    def drawPauseScreen(self, lightmode=True):
+        if lightmode:
+            self.bg_img = pygame.image.load("Images/pauseScreen_light.png")
+            self.bg_img = pygame.transform.scale(
+                self.bg_img, (WINDOW_WIDTH, WINDOW_HEIGHT)
+            )
+        else:
+            self.bg_img = pygame.image.load("Images/pauseScreen_dark.png")
+            self.bg_img = pygame.transform.scale(
+                self.bg_img, (WINDOW_WIDTH, WINDOW_HEIGHT)
+            )
+
+        self.screen.blit(self.bg_img, (0, 0))
         pygame.display.update()
         pygame.display.flip()
 

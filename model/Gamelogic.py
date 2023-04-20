@@ -30,23 +30,33 @@ class Gamelogic:
         self.gameOver = False
         self.dir = Direction.DOWN
         self.score = 0
-
+        self.lightMode = True
+        self.changeViewType(ViewType.GAME)
         pygame.init()
         SCREEN.fill(BLACK)
 
     def handle_event(self):
         self.controller.handle_event()
 
+    def changeViewType(self, viewtype, lightmode=True):
+        self.currentViewType = viewtype
+        self.lightMode = lightmode
+        self.view.setViewType(self.currentViewType, self.lightMode)
+
     def play(self):
         while not self.gameOver:
-            self.handle_event()
-            self.move_events()
-            self.checkForFullRows()
-            self.view.updateScore(self.score)
-            self.view.draw(self.board.grid, self.currentPiece)
+            if self.currentViewType == ViewType.GAME:
+                self.handle_event()
+                self.move_events()
+                self.check_events()
+            self.view.draw(self.board.grid, self.currentPiece, self.lightMode)
             pygame.display.update()
             CLOCK.tick(60)
             pygame.display.flip()
+
+    def check_events(self):
+        self.checkForFullRows()
+        self.view.updateScore(self.score)
 
     def clearLastPos(self):
         blocks = self.currentPiece.blocks

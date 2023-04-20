@@ -11,7 +11,6 @@ class TetrisController:
     def __init__(self, gamelogic, view):
         self.gamelogic = gamelogic
         self.view = view
-
         self.eye_detection = False
         # gaze tracking init
         if self.eye_detection:

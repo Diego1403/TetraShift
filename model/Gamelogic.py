@@ -73,7 +73,7 @@ class Gamelogic:
             self.setNewPiece()
         else:
             for pos in blocks:
-                if pos.getY() < NBOXES_VERTICAL - 2:
+                if pos.getY() < NBOXES_VERTICAL - 1:
                     if self.Grid[pos.x][pos.getY() + 1] != 0:
                         canGoDown = False
                         self.setNewPiece()
@@ -106,6 +106,14 @@ class Gamelogic:
                         break
         return canGoRight
 
+    def can_rotate(self, blocks):
+        canRotate = True
+        for pos in blocks:
+            if pos.getY() < 3:  # 3 is the number of blocks from the top
+                canRotate = False
+                break
+        return canRotate
+
     def move_events(self):
         # We reverte past grid positions to 0
         self.clearLastPos()
@@ -126,9 +134,13 @@ class Gamelogic:
                 self.dir = Direction.DOWN
 
         if self.dir == Direction.ROTATE:
-            self.clearLastPos()
-            self.currentPiece.rotate()
-            self.currentPiece.move_down()
+            if self.currentPieceType != "O" and self.can_rotate(
+                self.currentPiece.blocks
+            ):
+                self.clearLastPos()
+                self.currentPiece.rotate()
+                if self.can_go_down(self.currentPiece.blocks):
+                    self.currentPiece.move_down()
             self.dir = Direction.DOWN
 
     def setNewPiece(self):
@@ -164,8 +176,9 @@ class Gamelogic:
 
     def checkGameOver(self):
         for x in range(NBOXES_HORIZONTAL):
-            if self.Grid[x][0] >= 1:
+            if self.Grid[x][0] != 0:
                 self.gameOver = True
+                self.changeViewType(ViewType.GAMEOVER)
                 return
 
 

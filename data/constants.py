@@ -22,7 +22,7 @@ LIGHT_GREEN = (144, 238, 144)
 class ViewType(Enum):
     GAME = "0"
     PAUSE = "1"
-    GAME_OVER = "2"
+    GAMEOVER = "2"
     START = "3"
 
 

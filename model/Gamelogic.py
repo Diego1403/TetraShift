@@ -56,6 +56,7 @@ class Gamelogic:
     def check_events(self):
         self.checkForFullRows()
         self.view.updateScore(self.score)
+        self.checkGameOver()
 
     def clearLastPos(self):
         blocks = self.currentPiece.blocks
@@ -163,7 +164,7 @@ class Gamelogic:
 
     def checkGameOver(self):
         for x in range(NBOXES_HORIZONTAL):
-            if self.Grid[x][0] == 1:
+            if self.Grid[x][0] >= 1:
                 self.gameOver = True
                 return
 

@@ -80,6 +80,28 @@ class Gamelogic:
                         break
         return canGoDown
 
+    def reset_game(self):
+        self.score = 0
+        self.Grid = []
+        # initialize grid
+        for x in range(NBOXES_HORIZONTAL):
+            self.Grid.append([])
+            for y in range(NBOXES_VERTICAL):
+                self.Grid[x].append(0)
+        newselected = random.choice(list(self.data.items()))[1]
+        newpiece = copy.copy(newselected[0])
+        newcolor = copy.copy(newselected[1])
+        self.currentPiece = Tetris_piece(newpiece, newcolor)
+        self.currentPieceType = newpiece
+        self.board = TetrisBoard(self.Grid)
+        self.view = GameDisplay(self.board, self.currentPiece)
+        self.controller = TetrisController(self, self.view)
+        self.gameOver = False
+        self.dir = Direction.DOWN
+        self.lightMode = True
+        self.changeViewType(ViewType.START)
+        SCREEN.fill(BLACK)
+
     def can_go_left(self, blocks):
         mostLeft = self.currentPiece.getMostLeft()
         canGoLeft = True

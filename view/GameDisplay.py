@@ -17,6 +17,12 @@ class GameDisplay:
         self.bg_img = pygame.transform.scale(self.bg_img, (WINDOW_WIDTH, WINDOW_HEIGHT))
         self.viewtype = ViewType.START
         self.button_image = pygame.image.load("Images/start_button.png")
+        self.redblock = pygame.image.load("Images/blocks/redblock.jpg")
+        self.blueblock = pygame.image.load("Images/blocks/blueblock.jpg")
+        self.greenblock = pygame.image.load("Images/blocks/greenblock.jpg")
+        self.pinkblock = pygame.image.load("Images/blocks/pinkblock.jpg")
+        self.yellowblock = pygame.image.load("Images/blocks/yellowblock.jpg")
+
         self.button_image = pygame.transform.scale(
             self.button_image,
             (STARTBUTTONWIDTH, STARTBUTTONHEIGHT),
@@ -173,17 +179,28 @@ class GameDisplay:
     def drawCurrentPiece(self, currentPiece):
         x_offset = (WINDOW_WIDTH - GAME_WIDTH) // 2
         y_offset = 0
-        for pos in currentPiece.blocks:
-            pygame.draw.rect(
-                SCREEN,
-                currentPiece.color,
-                [
-                    x_offset + (MARGIN + BOX_WIDTH) * pos.x + MARGIN,
-                    y_offset + (MARGIN + BOX_HEIGHT) * pos.y + MARGIN,
-                    BOX_HEIGHT,
-                    BOX_WIDTH,
-                ],
+
+        block = self.redblock
+
+        if currentPiece.color == RED:
+            block = self.redblock
+        elif currentPiece.color == BLUE:
+            block = self.blueblock
+        elif currentPiece.color == GREEN:
+            block = self.greenblock
+        elif currentPiece.color == YELLOW:
+            block = self.yellowblock
+        elif currentPiece.color == PURPLE:
+            block = self.purpleblock
+
+        image = pygame.transform.scale(block, (BOX_WIDTH, BOX_HEIGHT))
+
+        for block in currentPiece.blocks:
+            pos = (
+                x_offset + (MARGIN + BOX_WIDTH) * block.x + MARGIN,
+                y_offset + (MARGIN + BOX_HEIGHT) * block.y + MARGIN,
             )
+            SCREEN.blit(image, pos)
 
     def drawScreen(self):
         pygame.draw.rect(self.screen, WHITE, [0, 0, WINDOW_WIDTH, WINDOW_HEIGHT], 5)

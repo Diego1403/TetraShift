@@ -46,8 +46,9 @@ class Gamelogic:
     def play(self):
         while not self.gameOver:
             self.handle_event()
-            self.move_events()
-            self.check_events()
+            if self.currentViewType == ViewType.GAME:
+                self.move_events()
+                self.check_events()
             CLOCK.tick(60)
             self.view.draw(self.currentPiece, self.lightMode)
             pygame.display.update()

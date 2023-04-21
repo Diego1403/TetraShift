@@ -4,7 +4,7 @@ import numpy as np
 
 # used to detect faces
 import dlib
-from data.constants import Direction
+from data.constants import Direction, ViewType
 
 
 class TetrisController:
@@ -45,6 +45,23 @@ class TetrisController:
                 if event.key == pygame.K_DOWN:
                     # move shape down and force move events
                     self.gamelogic.dir = Direction.DOWN
+            self.check_start_button(event)
+
+    def check_start_button(self, event):
+        startButton = self.view.get_StartButtonData()
+        startButtonCoords = startButton[0]
+        startButtonRect = startButton[1]
+        button_x = startButtonCoords[0]
+        button_y = startButtonCoords[1]
+        button_width = startButtonRect[0]
+        button_height = startButtonRect[1]
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            mouse_pos = pygame.mouse.get_pos()
+            if (
+                button_x <= mouse_pos[0] <= button_x + button_width
+                and button_y <= mouse_pos[1] <= button_y + button_height
+            ):
+                self.gamelogic.changeViewType(ViewType.GAME)
 
     def check_gaze_direction(self):
         self._, self.frame = self.cap.read()

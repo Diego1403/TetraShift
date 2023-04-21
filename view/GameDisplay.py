@@ -21,6 +21,10 @@ class GameDisplay:
             self.button_image,
             (STARTBUTTONWIDTH, STARTBUTTONHEIGHT),
         )
+        self.StartButtonCoords = (
+            (WINDOW_WIDTH // 2) - STARTBUTTONWIDTH // 2,
+            2 * WINDOW_HEIGHT // 3 + STARTBUTTONHEIGHT // 2,
+        )
 
     def draw(self, currentPiece, lightmode=True):
         if self.viewtype == ViewType.START:
@@ -104,12 +108,16 @@ class GameDisplay:
 
     def drawStartScreen(self, lightmode=True):
         self.screen.blit(self.bg_img, (0, 0))
+        self.drawStartButton()
+
+    def drawStartButton(self):
+        self.StartButtonCoords = (
+            (WINDOW_WIDTH // 2) - STARTBUTTONWIDTH // 2,
+            2 * WINDOW_HEIGHT // 3 + STARTBUTTONHEIGHT // 2,
+        )
         self.screen.blit(
             self.button_image,
-            (
-                (WINDOW_WIDTH // 2) - STARTBUTTONWIDTH // 2,
-                2 * WINDOW_HEIGHT // 3 + STARTBUTTONHEIGHT // 2,
-            ),
+            self.StartButtonCoords,
         )
 
     def drawGameOverScreen(self, lightmode=True):
@@ -201,3 +209,6 @@ class GameDisplay:
 
     def checkForGameOver(self):
         pass
+
+    def get_StartButtonData(self):
+        return self.StartButtonCoords, self.button_image.get_size()

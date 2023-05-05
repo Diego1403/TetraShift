@@ -3,54 +3,45 @@ import pygame
 import copy as copy
 
 from model.Block import Block
-from model.TetrisBoard import TetrisBoard
 from model.Tetris_piece import Tetris_piece
 from view.GameDisplay import GameDisplay
 from controller.TetrisController import TetrisController
 from data.constants import *
+import queue
 
 
 class Gamelogic:
     def __init__(self):
-        self.Grid = []
-        # initialize grid
-        for x in range(NBOXES_HORIZONTAL):
-            self.Grid.append([])
-            for y in range(NBOXES_VERTICAL):
-                self.Grid[x].append(0)
-        self.data = tetris_data().items
-        newselected = random.choice(list(self.data.items()))[1]
-        newpiece = copy.copy(newselected[0])
-        newcolor = copy.copy(newselected[1])
-        self.currentPiece = Tetris_piece(newpiece, newcolor)
-        self.currentPieceType = newpiece
-        self.board = TetrisBoard(self.Grid)
-        self.view = GameDisplay(self.board, self.currentPiece)
-        self.controller = TetrisController(self, self.view)
-        self.gameOver = False
-        self.dir = Direction.DOWN
         self.score = 0
+        self.Grid = []
+        self.exitGame = False
+        self.pause = False
+        self.dir = Direction.DOWN
         self.lightMode = True
-        self.changeViewType(ViewType.START)
+
+        self.reset_game()
+
+        self.changeViewType(ViewType.GAME, self.lightMode)
         pygame.init()
         SCREEN.fill(BLACK)
 
     def handle_event(self):
         self.controller.handle_event()
 
-    def changeViewType(self, viewtype, lightmode=True):
+    def changeViewType(self, viewtype, lightmode):
         self.currentViewType = viewtype
         self.lightMode = lightmode
         self.view.setViewType(self.currentViewType, self.lightMode)
 
     def play(self):
-        while not self.gameOver:
+        while not self.exitGame:
             self.handle_event()
-            if self.currentViewType == ViewType.GAME:
+            if self.currentViewType == ViewType.GAME and not self.pause:
                 self.move_events()
                 self.check_events()
+
             CLOCK.tick(60)
-            self.view.draw(self.currentPiece, self.lightMode)
+            self.view.draw(self.currentPiece, self.nextPieces, self.lightMode)
             pygame.display.update()
             pygame.display.flip()
 
@@ -82,25 +73,26 @@ class Gamelogic:
         return canGoDown
 
     def reset_game(self):
-        self.score = 0
-        self.Grid = []
         # initialize grid
         for x in range(NBOXES_HORIZONTAL):
             self.Grid.append([])
             for y in range(NBOXES_VERTICAL):
                 self.Grid[x].append(0)
-        newselected = random.choice(list(self.data.items()))[1]
-        newpiece = copy.copy(newselected[0])
-        newcolor = copy.copy(newselected[1])
-        self.currentPiece = Tetris_piece(newpiece, newcolor)
-        self.currentPieceType = newpiece
-        self.board = TetrisBoard(self.Grid)
-        self.view = GameDisplay(self.board, self.currentPiece)
+
+        data = tetris_data().items
+
+        self.nextPieces = queue.Queue(5)
+        for i in range(5):
+            newselected = random.choice(list(data.items()))[1]
+            newblocks = copy.copy(newselected[0])
+            newcolor = copy.copy(newselected[1])
+            self.nextPieces.put(Tetris_piece(newblocks, newcolor))
+        new = self.nextPieces.get()
+        self.currentPiece = Tetris_piece(new.blocks, new.color)
+        self.view = GameDisplay(self.Grid, self.currentPiece)
         self.controller = TetrisController(self, self.view)
-        self.gameOver = False
         self.dir = Direction.DOWN
-        self.lightMode = True
-        self.changeViewType(ViewType.START)
+        self.changeViewType(ViewType.GAME, self.lightMode)
         SCREEN.fill(BLACK)
 
     def can_go_left(self, blocks):
@@ -157,9 +149,7 @@ class Gamelogic:
                 self.dir = Direction.DOWN
 
         if self.dir == Direction.ROTATE:
-            if self.currentPieceType != "O" and self.can_rotate(
-                self.currentPiece.blocks
-            ):
+            if self.can_rotate(self.currentPiece.blocks):
                 self.clearLastPos()
                 self.currentPiece.rotate()
                 if self.can_go_down(self.currentPiece.blocks):
@@ -172,10 +162,11 @@ class Gamelogic:
         del self.currentPiece
         data = tetris_data().items
         newselected = random.choice(list(data.items()))[1]
-        newpiece = copy.copy(newselected[0])
+        newblocks = copy.copy(newselected[0])
         newcolor = copy.copy(newselected[1])
-        self.currentPiece = Tetris_piece(newpiece, newcolor)
-        self.currentPieceType = newpiece
+        self.nextPieces.put(Tetris_piece(newblocks, newcolor))
+        self.currentPiece = self.nextPieces.get()
+        # self.currentPieceType = newpiece
 
     def checkForFullRows(self):
         rowsToDelete = []
@@ -200,19 +191,22 @@ class Gamelogic:
     def checkGameOver(self):
         for x in range(NBOXES_HORIZONTAL):
             if self.Grid[x][0] != 0:
-                self.gameOver = True
+                self.pause = True
                 self.changeViewType(ViewType.GAMEOVER)
                 return
 
 
 class tetris_data:
+    # Dictionary with all the pieces and their colors
+    # The key is the piece type and the value is a list with the piece and the color
+    # The piece is a list of blocks and the color is a tuple with the RGB values
     def __init__(self):
         self.items = {
             "I": [[Block(6, 0), Block(5, 0), Block(5, 1), Block(4, 1)], BLUE],
             "Z": [[Block(5, 0), Block(6, 0), Block(6, 1), Block(7, 1)], YELLOW],
-            "O": [[Block(0, 0), Block(0, 1), Block(0, 2), Block(0, 3)], PINK],
+            "O": [[Block(5, 0), Block(5, 1), Block(5, 2), Block(5, 3)], PINK],
             "J": [[Block(5, 0), Block(6, 0), Block(5, 1), Block(6, 1)], GREEN],
             "L": [[Block(5, 0), Block(6, 0), Block(7, 0), Block(5, 1)], BLUE],
             "T": [[Block(5, 0), Block(6, 0), Block(7, 0), Block(6, 1)], ORANGE],
-            "S": [[Block(5, 0), Block(6, 0), Block(6, 1), Block(7, 1)], RED],
+            "S": [[Block(5, 0), Block(6, 1), Block(6, 0), Block(7, 1)], RED],
         }

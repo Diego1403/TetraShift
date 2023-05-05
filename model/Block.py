@@ -6,6 +6,12 @@ class Block:
     def getPos(self):
         return Block(self.x, self.y)
 
+    def GoDown(self):
+        self.y = self.y + 0.1
+
+    def GoLeft(self):
+        self.x = self.x - 1
+
     def GoRight(self):
         self.x = self.x + 1
 
@@ -15,13 +21,3 @@ class Block:
 
     def getY(self):
         return int(self.y)
-
-    def GoLeft(self):
-        self.x = self.x - 1
-
-    def GoDown(self):
-        self.y = self.y + 0.1
-
-    def __str__(self):
-        rep = "(" + str(self.x) + " , " + str(self.y) + ")"
-        return rep

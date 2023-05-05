@@ -5,7 +5,6 @@ from data.constants import NBOXES_HORIZONTAL
 class Tetris_piece:
     def __init__(self, blocks, color):
         self.color = color
-        self.orientation = 0
         self.blocks = blocks
 
     def move_right(self):
@@ -22,6 +21,7 @@ class Tetris_piece:
 
     def getLowestHeight(self):
         lowest_pos = 0
+
         for block in self.blocks:
             if block.getY() > lowest_pos:
                 lowest_pos = block.getY()

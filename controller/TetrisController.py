@@ -45,7 +45,8 @@ class TetrisController:
                 if event.key == pygame.K_DOWN:
                     # move shape down and force move events
                     self.gamelogic.dir = Direction.DOWN
-            self.check_start_button(event)
+            self.check_button(event, self.view.get_StartButtonData(), "startButton")
+            self.check_button(event, self.view.get_PauseButtonData(), "pauseButton")
 
     def check_start_button(self, event):
         startButton = self.view.get_StartButtonData()
@@ -63,6 +64,29 @@ class TetrisController:
             ):
                 self.gamelogic.changeViewType(ViewType.GAME)
 
+    def check_button(self, event, Button, tipo):
+        ButtonCoords = Button[0]
+        ButtonRect = Button[1]
+        button_x = ButtonCoords[0]
+        button_y = ButtonCoords[1]
+        button_width = ButtonRect[0]
+        button_height = ButtonRect[1]
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            mouse_pos = pygame.mouse.get_pos()
+            if (
+                button_x <= mouse_pos[0] <= button_x + button_width
+                and button_y <= mouse_pos[1] <= button_y + button_height
+            ):
+                if tipo == "startButton":
+                    self.gamelogic.changeViewType(
+                        ViewType.GAME, self.gamelogic.lightMode
+                    )
+                elif tipo == "pauseButton":
+                    self.gamelogic.changeViewType(
+                        ViewType.PAUSE, self.gamelogic.lightMode
+                    )
+                    self.gamelogic.pause = True
+
     def check_gaze_direction(self):
         self._, self.frame = self.cap.read()
         self.gray = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
@@ -78,6 +102,9 @@ class TetrisController:
             right_eye_ratio = self.get_blinking_ratio(
                 [42, 43, 44, 45, 46, 47], landmarks
             )
+
+            mouth_ratio = self.get_mouth_ratio([61, 62, 63, 64, 65, 66, 67], landmarks)
+
             rotate = False
             if right_eye_ratio + left_eye_ratio / 2 > 6:
                 d = Direction.ROTATE
@@ -96,20 +123,18 @@ class TetrisController:
             gaze_ratio = (gaze_ratio_right_eye + gaze_ratio_left_eye) / 2
             new_frame = np.zeros((500, 500, 3), np.uint8)
             print(gaze_ratio)
-            if gaze_ratio <= 0.35:
+            if gaze_ratio <= 1:
                 cv2.putText(
                     self.frame, "RIGHT", (50, 100), self.font, 2, (0, 0, 255), 3
                 )
                 d = Direction.RIGHT
                 break
-
                 new_frame[:] = (0, 0, 255)
-            elif 0.5 < gaze_ratio < 3:
+            elif 1 < gaze_ratio < 2:
                 cv2.putText(
                     self.frame, "CENTER", (50, 100), self.font, 2, (0, 0, 255), 3
                 )
                 d = Direction.DOWN
-
             else:
                 new_frame[:] = (255, 0, 0)
                 cv2.putText(self.frame, "LEFT", (50, 100), self.font, 2, (0, 0, 255), 3)
@@ -118,6 +143,54 @@ class TetrisController:
 
         cv2.imshow("Frame", self.frame)
         return d
+
+    def get_mouth_ratio(self, mouth_points, facial_landmarks):
+        mouth_region = np.array(
+            [
+                (
+                    facial_landmarks.part(mouth_points[0]).x,
+                    facial_landmarks.part(mouth_points[0]).y,
+                ),
+                (
+                    facial_landmarks.part(mouth_points[1]).x,
+                    facial_landmarks.part(mouth_points[1]).y,
+                ),
+                (
+                    facial_landmarks.part(mouth_points[2]).x,
+                    facial_landmarks.part(mouth_points[2]).y,
+                ),
+                (
+                    facial_landmarks.part(mouth_points[3]).x,
+                    facial_landmarks.part(mouth_points[3]).y,
+                ),
+                (
+                    facial_landmarks.part(mouth_points[4]).x,
+                    facial_landmarks.part(mouth_points[4]).y,
+                ),
+                (
+                    facial_landmarks.part(mouth_points[5]).x,
+                    facial_landmarks.part(mouth_points[5]).y,
+                ),
+                (
+                    facial_landmarks.part(mouth_points[6]).x,
+                    facial_landmarks.part(mouth_points[6]).y,
+                ),
+            ],
+            np.int32,
+        )
+
+        # we draw a polygon around the left eye
+        height, width, _ = self.frame.shape
+        mask = np.zeros((height, width), np.uint8)
+        cv2.polylines(mask, [mouth_region], True, 255, 2)
+        cv2.fillPoly(mask, [mouth_region], 255)
+        eye = cv2.bitwise_and(self.gray, self.gray, mask=mask)
+        # we get the min and max values of the x and y coordinates
+        min_x = np.min(mouth_region[:, 0])
+        max_x = np.max(mouth_region[:, 0])
+        min_y = np.min(mouth_region[:, 1])
+        max_y = np.max(mouth_region[:, 1])
+        # we get the gray eye
 
     # we divide the left side white pixels by the right side white pixels
     def get_gaze_ratio(self, eye_points, facial_landmarks):

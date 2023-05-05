@@ -1,5 +1,5 @@
 import pygame
-
+import queue
 from data.constants import *
 
 
@@ -16,15 +16,19 @@ class GameDisplay:
         self.bg_img = pygame.image.load("Images/bg_light.png")
         self.bg_img = pygame.transform.scale(self.bg_img, (WINDOW_WIDTH, WINDOW_HEIGHT))
         self.viewtype = ViewType.START
-        self.button_image = pygame.image.load("Images/start_button.png")
+        self.start_button_image = pygame.image.load("Images/start_button.png")
+        self.pause_button_image = pygame.image.load("Images/start_button.png")
+        # self.continueGame_button_image = pygame.image.load("Images/continueGame_button.png")
+        # self.exitGame_button_image = pygame.image.load("Images/exitGame_button.png")
+        # self.toogleLightMode_button_image = pygame.image.load("Images/toogleLightMode_button.png")
         self.redblock = pygame.image.load("Images/blocks/redblock.jpg")
         self.blueblock = pygame.image.load("Images/blocks/blueblock.jpg")
         self.greenblock = pygame.image.load("Images/blocks/greenblock.jpg")
         self.pinkblock = pygame.image.load("Images/blocks/pinkblock.jpg")
         self.yellowblock = pygame.image.load("Images/blocks/yellowblock.jpg")
 
-        self.button_image = pygame.transform.scale(
-            self.button_image,
+        self.start_button_image = pygame.transform.scale(
+            self.start_button_image,
             (STARTBUTTONWIDTH, STARTBUTTONHEIGHT),
         )
         self.StartButtonCoords = (
@@ -32,11 +36,38 @@ class GameDisplay:
             2 * WINDOW_HEIGHT // 3 + STARTBUTTONHEIGHT // 2,
         )
 
-    def draw(self, currentPiece, lightmode=True):
+        self.pause_button_image = pygame.transform.scale(
+            self.pause_button_image,
+            (PAUSEBUTTONWIDTH, PAUSEBUTTONHEIGHT),
+        )
+        self.PauseButtonCoords = (
+            (WINDOW_WIDTH // 2) - PAUSEBUTTONWIDTH // 2,
+            2 * WINDOW_HEIGHT // 3 + PAUSEBUTTONHEIGHT // 2,
+        )
+
+        # self.continueGame_button_image = pygame.transform.scale(
+        #     self.continueGame_button_image,
+        #     (STARTBUTTONWIDTH, STARTBUTTONHEIGHT),
+        # )
+        # self.ContinueGameButtonCoords = (
+        #     (WINDOW_WIDTH // 2) - STARTBUTTONWIDTH // 2,
+        #     2 * WINDOW_HEIGHT // 3 + STARTBUTTONHEIGHT // 2,
+        # )
+
+        # self.exitGame_button_image = pygame.transform.scale(
+        #     self.continueGame_button_image,
+        #     (STARTBUTTONWIDTH, STARTBUTTONHEIGHT),
+        # )
+        # self.exitGame_button_image = (
+        #     (WINDOW_WIDTH // 2) - STARTBUTTONWIDTH // 2,
+        #     2 * WINDOW_HEIGHT // 3 + STARTBUTTONHEIGHT // 2,
+        # )
+
+    def draw(self, currentPiece, nextPieces, lightmode=True):
         if self.viewtype == ViewType.START:
             self.drawStartScreen(lightmode)
         elif self.viewtype == ViewType.GAME:
-            self.drawGame(currentPiece, lightmode)
+            self.drawGame(currentPiece, nextPieces, lightmode)
         elif self.viewtype == ViewType.GAMEOVER:
             self.drawGameOverScreen(lightmode)
         elif self.viewtype == ViewType.PAUSE:
@@ -105,14 +136,38 @@ class GameDisplay:
             self.drawPauseScreen(lightmode)
         self.currentViewType = viewtype
 
-    def drawGame(self, currentPiece, lightmode=True):
+    def drawGame(self, currentPiece, nextPieces, lightmode):
         self.screen.blit(self.bg_img, (0, 0))
         self.drawScreen()
         self.drawGrid()
         self.drawCurrentPiece(currentPiece)
         self.drawScoreboard()
+        self.drawPauseButton()
+        self.drawNextPiece(nextPieces)
 
-    def drawStartScreen(self, lightmode=True):
+    def drawNextPiece(self, nextPieces):
+        for i in range(len(nextPieces.queue)):
+            drawPiece = nextPieces.queue[i]
+            self.drawPiece(drawPiece, i)
+
+    def drawPiece(self, piece, i):
+        CELL_SIZE = 13
+        for block in piece.blocks:
+            pygame.draw.rect(
+                self.screen,
+                piece.color,
+                (
+                    block.getX() + block.getX() * CELL_SIZE + WINDOW_WIDTH * 3 // 4,
+                    block.getY()
+                    + block.getY() * CELL_SIZE
+                    + GAME_HEIGHT // 3
+                    + i * 4 * CELL_SIZE,
+                    CELL_SIZE,
+                    CELL_SIZE,
+                ),
+            )
+
+    def drawStartScreen(self, lightmode):
         self.screen.blit(self.bg_img, (0, 0))
         self.drawStartButton()
 
@@ -122,8 +177,14 @@ class GameDisplay:
             2 * WINDOW_HEIGHT // 3 + STARTBUTTONHEIGHT // 2,
         )
         self.screen.blit(
-            self.button_image,
+            self.start_button_image,
             self.StartButtonCoords,
+        )
+
+    def drawPauseButton(self):
+        self.screen.blit(
+            self.pause_button_image,
+            self.PauseButtonCoords,
         )
 
     def drawGameOverScreen(self, lightmode=True):
@@ -163,44 +224,42 @@ class GameDisplay:
         for x in range(NBOXES_HORIZONTAL):
             for y in range(NBOXES_VERTICAL):
                 # draw all pieces
-                if self.board.grid[x][y] != 0:
-                    color = self.board.grid[x][y]
-                    rect = pygame.draw.rect(
-                        SCREEN,
-                        color,
-                        [
-                            x_offset + (MARGIN + BOX_WIDTH) * x + MARGIN,
-                            y_offset + (MARGIN + BOX_HEIGHT) * y + MARGIN,
-                            BOX_HEIGHT,
-                            BOX_WIDTH,
-                        ],
+
+                if self.board[x][y] != 0:
+                    color = self.board[x][y]
+                    pos = (
+                        x_offset + (MARGIN + BOX_WIDTH) * x + MARGIN,
+                        y_offset + (MARGIN + BOX_HEIGHT) * y + MARGIN,
                     )
+
+                    self.drawBlock(color, pos)
 
     def drawCurrentPiece(self, currentPiece):
         x_offset = (WINDOW_WIDTH - GAME_WIDTH) // 2
         y_offset = 0
-
-        block = self.redblock
-
-        if currentPiece.color == RED:
-            block = self.redblock
-        elif currentPiece.color == BLUE:
-            block = self.blueblock
-        elif currentPiece.color == GREEN:
-            block = self.greenblock
-        elif currentPiece.color == YELLOW:
-            block = self.yellowblock
-        elif currentPiece.color == PURPLE:
-            block = self.purpleblock
-
-        image = pygame.transform.scale(block, (BOX_WIDTH, BOX_HEIGHT))
 
         for block in currentPiece.blocks:
             pos = (
                 x_offset + (MARGIN + BOX_WIDTH) * block.x + MARGIN,
                 y_offset + (MARGIN + BOX_HEIGHT) * block.y + MARGIN,
             )
-            SCREEN.blit(image, pos)
+            self.drawBlock(currentPiece.color, pos)
+
+    def drawBlock(self, color, pos):
+        block = self.redblock
+        if color == RED:
+            block = self.redblock
+        elif color == BLUE:
+            block = self.blueblock
+        elif color == GREEN:
+            block = self.greenblock
+        elif color == YELLOW:
+            block = self.yellowblock
+        elif color == PURPLE:
+            block = self.purpleblock
+
+        image = pygame.transform.scale(block, (BOX_WIDTH, BOX_HEIGHT))
+        SCREEN.blit(image, pos)
 
     def drawScreen(self):
         pygame.draw.rect(self.screen, WHITE, [0, 0, WINDOW_WIDTH, WINDOW_HEIGHT], 5)
@@ -228,4 +287,7 @@ class GameDisplay:
         pass
 
     def get_StartButtonData(self):
-        return self.StartButtonCoords, self.button_image.get_size()
+        return self.StartButtonCoords, self.start_button_image.get_size()
+
+    def get_PauseButtonData(self):
+        return self.PauseButtonCoords, self.pause_button_image.get_size()

@@ -153,9 +153,6 @@ class GameDisplay:
             self.drawGameOverScreen(lightmode)
         elif viewtype == ViewType.PAUSE:
             self.drawPauseScreen(lightmode)
-
-        elif viewtype == ViewType.GAMEOVER:
-            pass
         self.currentViewType = viewtype
 
     def drawGame(self, currentPiece, nextPieces, lightmode):

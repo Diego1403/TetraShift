@@ -1,5 +1,6 @@
 import random
 import pygame
+from pygame.locals import *
 import copy as copy
 
 from model.Block import Block
@@ -12,6 +13,8 @@ import queue
 
 class Gamelogic:
     def __init__(self):
+        pygame.mixer.init()
+
         self.score = 0
         self.Grid = []
         self.exitGame = False
@@ -20,7 +23,7 @@ class Gamelogic:
         self.lightMode = True
 
         self.reset_game()
-
+        self.full_row_sound = pygame.mixer.Sound("audio/full_row.mp3")
         self.changeViewType(ViewType.GAME, self.lightMode)
         pygame.init()
         SCREEN.fill(BLACK)
@@ -39,7 +42,6 @@ class Gamelogic:
             if self.currentViewType == ViewType.GAME and not self.pause:
                 self.move_events()
                 self.check_events()
-
             CLOCK.tick(60)
             self.view.draw(self.currentPiece, self.nextPieces, self.lightMode)
             pygame.display.update()
@@ -177,6 +179,7 @@ class Gamelogic:
                     rowComplete = False
                     break
             if rowComplete:
+                self.full_row_sound.play()
                 rowsToDelete.append(y)
                 self.score += 10
 

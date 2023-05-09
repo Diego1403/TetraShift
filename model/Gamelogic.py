@@ -24,8 +24,11 @@ class Gamelogic:
 
         self.reset_game()
         self.full_row_sound = pygame.mixer.Sound("audio/full_row.mp3")
-        self.changeViewType(ViewType.GAME, self.lightMode)
+        self.gameover_sound = pygame.mixer.Sound("audio/game_over.mp3")
+        self.music = pygame.mixer.music.load("audio/music.mp3")
+        self.changeViewType(ViewType.START, self.lightMode)
         pygame.init()
+
         SCREEN.fill(BLACK)
 
     def handle_event(self):
@@ -37,11 +40,15 @@ class Gamelogic:
         self.view.setViewType(self.currentViewType, self.lightMode)
 
     def play(self):
+        pygame.mixer.music.play(-1)
         while not self.exitGame:
             self.handle_event()
             if self.currentViewType == ViewType.GAME and not self.pause:
+                pygame.mixer.music.unpause()
                 self.move_events()
                 self.check_events()
+            else:
+                pygame.mixer.music.pause()
             CLOCK.tick(60)
             self.view.draw(self.currentPiece, self.nextPieces, self.lightMode)
             pygame.display.update()
@@ -167,7 +174,8 @@ class Gamelogic:
         newblocks = copy.copy(newselected[0])
         newcolor = copy.copy(newselected[1])
         self.nextPieces.put(Tetris_piece(newblocks, newcolor))
-        self.currentPiece = self.nextPieces.get()
+        newPiece = self.nextPieces.get()
+        self.currentPiece = Tetris_piece(newPiece.blocks, newPiece.color)
         # self.currentPieceType = newpiece
 
     def checkForFullRows(self):
@@ -196,6 +204,7 @@ class Gamelogic:
             if self.Grid[x][0] != 0:
                 self.pause = True
                 self.changeViewType(ViewType.GAMEOVER, self.lightMode)
+                self.gameover_sound.play()
                 return
 
 

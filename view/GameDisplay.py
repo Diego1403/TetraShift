@@ -7,10 +7,11 @@ class GameDisplay:
     def __init__(self, board, currentPiece):
         self.board = board
         self.currentPiece = currentPiece
-        self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
-        self.font = pygame.font.SysFont("comicsansms", 30)
         self.gameOver = False
         self.score = 0
+        self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+        self.font = pygame.font.SysFont("comicsansms", 30)
+
         self.dir = Direction.DOWN
         self.scoreFont = pygame.font.SysFont("comicsansms", 30)
         # default is light mode
@@ -30,7 +31,6 @@ class GameDisplay:
         self.exit_button_img_light = pygame.image.load(
             "Images/exitGame_button_light.png"
         )
-
         self.toogle_dark_img = pygame.image.load("Images/toogle_button_dark.png")
         self.toogle_light_img = pygame.image.load("Images/toogle_button_light.png")
         self.try_again_img_dark = pygame.image.load("Images/try_again_button_dark.png")
@@ -136,6 +136,7 @@ class GameDisplay:
                 self.bg_img = pygame.transform.scale(
                     self.bg_img, (WINDOW_WIDTH, WINDOW_HEIGHT)
                 )
+
         elif viewtype == ViewType.GAME:
             if lightmode:
                 self.lightmode = True
@@ -157,19 +158,23 @@ class GameDisplay:
 
     def drawGame(self, currentPiece, nextPieces, lightmode):
         self.screen.blit(self.bg_img, (0, 0))
-        self.drawScreen()
-        self.drawGrid()
-        self.drawCurrentPiece(currentPiece)
-        self.drawScoreboard()
-        self.drawPauseButton()
-        self.drawNextPiece(nextPieces)
+        self.drawScreen()  # draws the game screen
+        self.drawGrid()  # draws the grid on the game screen
+        self.drawCurrentPiece(
+            currentPiece
+        )  # draws the current piece on the game screen
+        self.drawScoreboard()  # draws the scoreboard on the game screen
+        self.drawPauseButton()  # draws the pause button
+        self.drawNextPiece(nextPieces)  # draws the next piece
 
-    def drawNextPiece(self, nextPieces):
+    def drawNextPiece(
+        self, nextPieces
+    ):  # draws the pieces in the queue on the right side of the screen
         for i in range(len(nextPieces.queue)):
             drawPiece = nextPieces.queue[i]
             self.drawPiece(drawPiece, i)
 
-    def drawPiece(self, piece, i):
+    def drawPiece(self, piece, i):  # draws the piece on the right side of the screen
         CELL_SIZE = 13
         for block in piece.blocks:
             pygame.draw.rect(
@@ -186,7 +191,9 @@ class GameDisplay:
                 ),
             )
 
-    def drawGameOverScreen(self, lightmode=True):
+    def drawGameOverScreen(
+        self, lightmode=True
+    ):  # draws the game over screen when the game is over
         if lightmode:
             self.bg_img = pygame.image.load("Images/game_over_light.png")
             self.bg_img = pygame.transform.scale(
@@ -202,7 +209,9 @@ class GameDisplay:
         self.drawExitGame(lightmode)
         self.drawTryAgain(lightmode)
 
-    def drawTryAgain(self, lightmode):
+    def drawTryAgain(
+        self, lightmode
+    ):  # draws the try again button on the game over screen
         if lightmode:
             self.screen.blit(
                 self.try_again_img_light,
@@ -214,7 +223,9 @@ class GameDisplay:
                 self.TryAgainButtonCoords,
             )
 
-    def drawStartScreen(self, lightmode):
+    def drawStartScreen(
+        self, lightmode
+    ):  # draws the start screen when the game is first opened
         self.screen.blit(self.bg_img, (0, 0))
         self.drawStartButton()
 
@@ -313,6 +324,9 @@ class GameDisplay:
     def updateScore(self, score):
         self.score = score
 
+    def get_ViewType(self):
+        return self.viewtype
+
     def get_StartButtonData(self):
         return self.StartButtonCoords, self.start_button_image.get_size()
 
@@ -324,3 +338,6 @@ class GameDisplay:
 
     def get_ExitButtonData(self):
         return self.ExitButtonCoords, self.exit_button_img_light.get_size()
+
+    def get_TryAgainButtonData(self):
+        return self.TryAgainButtonCoords, self.try_again_img_light.get_size()

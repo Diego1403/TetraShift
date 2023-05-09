@@ -50,6 +50,7 @@ class TetrisController:
             self.check_button(
                 event, self.view.get_ContinueButtonData(), "continueButton"
             )
+            self.check_button(event, self.view.get_ExitButtonData(), "exitButton")
 
     def check_button(self, event, Button, tipo):
         ButtonCoords = Button[0]
@@ -78,6 +79,10 @@ class TetrisController:
                     self.gamelogic.changeViewType(
                         ViewType.GAME, self.gamelogic.lightMode
                     )
+                elif tipo == "exitButton":
+                    self.gamelogic.gameOver = True
+                    pygame.display.quit()
+                    quit()
 
     def check_gaze_direction(self):
         self._, self.frame = self.cap.read()

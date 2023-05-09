@@ -309,3 +309,6 @@ class GameDisplay:
 
     def get_ContinueButtonData(self):
         return self.ContinueButtonCoords, self.continue_button_img.get_size()
+
+    def get_ExitButtonData(self):
+        return self.ExitButtonCoords, self.exit_button_img_light.get_size()

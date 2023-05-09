@@ -11,6 +11,7 @@ class TetrisController:
     def __init__(self, gamelogic, view):
         self.gamelogic = gamelogic
         self.view = view
+        self.viewType = ViewType.START
         self.eye_detection = False
         # gaze tracking init
         if self.eye_detection:
@@ -45,19 +46,23 @@ class TetrisController:
                 if event.key == pygame.K_DOWN:
                     # move shape down and force move events
                     self.gamelogic.dir = Direction.DOWN
-            if self.view == ViewType.START:
+
+            self.viewType = self.view.get_ViewType()
+            if self.viewType == ViewType.START:
                 self.check_button(event, self.view.get_StartButtonData(), "startButton")
-            if self.view == ViewType.GAME:
+            if self.viewType == ViewType.GAME:
                 self.check_button(event, self.view.get_PauseButtonData(), "pauseButton")
-            if self.view == ViewType.PAUSE:
+            if self.viewType == ViewType.PAUSE:
                 self.check_button(
                     event, self.view.get_ContinueButtonData(), "continueButton"
                 )
-            if self.view == ViewType.GAMEOVER or self.view == ViewType.PAUSE:
+
+            if self.viewType == ViewType.GAMEOVER or self.view == ViewType.PAUSE:
                 self.check_button(event, self.view.get_ExitButtonData(), "exitButton")
-            if self.view == ViewType.GAMEOVER:
+
+            if self.viewType == ViewType.GAMEOVER:
                 self.check_button(
-                    event, self.view.get_RestartButtonData(), "tryAgainButton"
+                    event, self.view.get_TryAgainButtonDatas(), "tryAgainButton"
                 )
 
     def check_button(self, event, Button, tipo):
@@ -81,6 +86,7 @@ class TetrisController:
                     self.gamelogic.changeViewType(
                         ViewType.PAUSE, self.gamelogic.lightMode
                     )
+
                     self.gamelogic.pause = True
                 elif tipo == "continueButton":
                     self.gamelogic.pause = False

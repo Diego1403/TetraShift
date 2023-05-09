@@ -192,7 +192,7 @@ class Gamelogic:
         for x in range(NBOXES_HORIZONTAL):
             if self.Grid[x][0] != 0:
                 self.pause = True
-                self.changeViewType(ViewType.GAMEOVER)
+                self.changeViewType(ViewType.GAMEOVER, self.lightMode)
                 return
 
 

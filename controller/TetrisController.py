@@ -45,12 +45,20 @@ class TetrisController:
                 if event.key == pygame.K_DOWN:
                     # move shape down and force move events
                     self.gamelogic.dir = Direction.DOWN
-            self.check_button(event, self.view.get_StartButtonData(), "startButton")
-            self.check_button(event, self.view.get_PauseButtonData(), "pauseButton")
-            self.check_button(
-                event, self.view.get_ContinueButtonData(), "continueButton"
-            )
-            self.check_button(event, self.view.get_ExitButtonData(), "exitButton")
+            if self.view == ViewType.START:
+                self.check_button(event, self.view.get_StartButtonData(), "startButton")
+            if self.view == ViewType.GAME:
+                self.check_button(event, self.view.get_PauseButtonData(), "pauseButton")
+            if self.view == ViewType.PAUSE:
+                self.check_button(
+                    event, self.view.get_ContinueButtonData(), "continueButton"
+                )
+            if self.view == ViewType.GAMEOVER or self.view == ViewType.PAUSE:
+                self.check_button(event, self.view.get_ExitButtonData(), "exitButton")
+            if self.view == ViewType.GAMEOVER:
+                self.check_button(
+                    event, self.view.get_RestartButtonData(), "tryAgainButton"
+                )
 
     def check_button(self, event, Button, tipo):
         ButtonCoords = Button[0]
@@ -83,6 +91,13 @@ class TetrisController:
                     self.gamelogic.gameOver = True
                     pygame.display.quit()
                     quit()
+                elif tipo == "tryAgainButton":
+                    self.gamelogic.gameOver = False
+                    self.gamelogic.pause = False
+                    self.gamelogic.reset_game()
+                    self.gamelogic.changeViewType(
+                        ViewType.GAME, self.gamelogic.lightMode
+                    )
 
     def check_gaze_direction(self):
         self._, self.frame = self.cap.read()

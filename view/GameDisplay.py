@@ -21,9 +21,6 @@ class GameDisplay:
         self.pause_screen_light_image = pygame.image.load(
             "Images/pause_screen_light.png"
         )
-        # replace with new scoreboard image
-        self.game_over_screen_light = pygame.image.load("Images/gameoverday.png")
-        self.game_over_screen_day = pygame.image.load("Images/gameoverday.png")
         self.bg_img = pygame.transform.scale(self.bg_img, (WINDOW_WIDTH, WINDOW_HEIGHT))
         self.viewtype = ViewType.START
         self.start_button_image = pygame.image.load("Images/start_button.png")
@@ -73,6 +70,11 @@ class GameDisplay:
             (WINDOW_WIDTH // 2) - CONTINUEBUTTONWIDTH // 2,
             WINDOW_HEIGHT // 3 - CONTINUEBUTTONHEIGHT // 2,
         )
+        self.exit_button_img_light = pygame.transform.scale(
+            self.exit_button_img_light,
+            (EXITBUTTONWIDTH, EXITBUTTONHEIGHT),
+        )
+
         self.exit_button_img_dark = pygame.transform.scale(
             self.exit_button_img_dark,
             (EXITBUTTONWIDTH, EXITBUTTONHEIGHT),
@@ -80,7 +82,22 @@ class GameDisplay:
 
         self.ExitButtonCoords = (
             (WINDOW_WIDTH // 2) - EXITBUTTONWIDTH // 2,
-            (WINDOW_HEIGHT // 3) - EXITBUTTONHEIGHT // 2 + 200,
+            (WINDOW_HEIGHT // 3) - EXITBUTTONHEIGHT // 2 + 100,
+        )
+
+        self.try_again_img_light = pygame.transform.scale(
+            self.try_again_img_light,
+            (TRYAGAINBUTTONWIDTH, TRYAGAINBUTTONHEIGHT),
+        )
+
+        self.try_again_img_dark = pygame.transform.scale(
+            self.try_again_img_dark,
+            (TRYAGAINBUTTONWIDTH, TRYAGAINBUTTONHEIGHT),
+        )
+
+        self.TryAgainButtonCoords = (
+            (WINDOW_WIDTH // 2) - TRYAGAINBUTTONWIDTH // 2,
+            2 * WINDOW_HEIGHT // 3 + TRYAGAINBUTTONHEIGHT // 2,
         )
 
         # self.exitGame_button_image = pygame.transform.scale(
@@ -133,18 +150,7 @@ class GameDisplay:
                     self.bg_img, (WINDOW_WIDTH, WINDOW_HEIGHT)
                 )
         elif viewtype == ViewType.GAMEOVER:
-            if lightmode:
-                self.lightmode = True
-                self.bg_img = pygame.image.load("Images/gameOver_light.png")
-                self.bg_img = pygame.transform.scale(
-                    self.bg_img, (WINDOW_WIDTH, WINDOW_HEIGHT)
-                )
-            else:
-                self.lightmode = False
-                self.bg_img = pygame.image.load("Images/gameOver_dark.png")
-                self.bg_img = pygame.transform.scale(
-                    self.bg_img, (WINDOW_WIDTH, WINDOW_HEIGHT)
-                )
+            self.drawGameOverScreen(lightmode)
         elif viewtype == ViewType.PAUSE:
             self.drawPauseScreen(lightmode)
 
@@ -183,6 +189,34 @@ class GameDisplay:
                 ),
             )
 
+    def drawGameOverScreen(self, lightmode=True):
+        if lightmode:
+            self.bg_img = pygame.image.load("Images/game_over_light.png")
+            self.bg_img = pygame.transform.scale(
+                self.bg_img, (WINDOW_WIDTH, WINDOW_HEIGHT)
+            )
+
+        else:
+            self.bg_img = pygame.image.load("Images/game_over_dark.png")
+            self.bg_img = pygame.transform.scale(
+                self.bg_img, (WINDOW_WIDTH, WINDOW_HEIGHT)
+            )
+
+        self.drawExitGame(lightmode)
+        self.drawTryAgain(lightmode)
+
+    def drawTryAgain(self, lightmode):
+        if lightmode:
+            self.screen.blit(
+                self.try_again_img_light,
+                self.TryAgainButtonCoords,
+            )
+        else:
+            self.screen.blit(
+                self.try_again_img_dark,
+                self.TryAgainButtonCoords,
+            )
+
     def drawStartScreen(self, lightmode):
         self.screen.blit(self.bg_img, (0, 0))
         self.drawStartButton()
@@ -203,23 +237,9 @@ class GameDisplay:
             self.PauseButtonCoords,
         )
 
-    def drawGameOverScreen(self, lightmode=True):
-        if lightmode:
-            self.bg_img = pygame.image.load("Images/gameOver_light.png")
-            self.bg_img = pygame.transform.scale(
-                self.bg_img, (WINDOW_WIDTH, WINDOW_HEIGHT)
-            )
-        else:
-            self.bg_img = pygame.image.load("Images/gameOver_dark.png")
-            self.bg_img = pygame.transform.scale(
-                self.bg_img, (WINDOW_WIDTH, WINDOW_HEIGHT)
-            )
-
-        self.screen.blit(self.bg_img, (0, 0))
-
     def drawPauseScreen(self, lightmode=True):
         self.drawContinueGame(lightmode)
-        self.drawExitGame(lightmode)
+        # self.drawExitGame(lightmode)
 
     def drawContinueGame(self, lightmode=True):
         self.screen.blit(self.continue_button_img, self.ContinueButtonCoords)
@@ -289,17 +309,12 @@ class GameDisplay:
         text_rect.center = (SCOREBOARD_WIDTH, SCOREBOARD_HEIGHT)
         self.screen.blit(text, (x_offset, y_offset))
 
-    def gameOver(self):
-        self.gameOver = True
-        self.screen.fill(BLACK)
+    def drawGameOver(self):
         text = self.font.render("Game Over", True, WHITE)
         self.screen.blit(text, (WINDOW_WIDTH / 2 - 50, WINDOW_HEIGHT / 2 - 50))
 
     def updateScore(self, score):
         self.score = score
-
-    def checkForGameOver(self):
-        pass
 
     def get_StartButtonData(self):
         return self.StartButtonCoords, self.start_button_image.get_size()

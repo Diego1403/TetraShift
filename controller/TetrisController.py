@@ -47,22 +47,9 @@ class TetrisController:
                     self.gamelogic.dir = Direction.DOWN
             self.check_button(event, self.view.get_StartButtonData(), "startButton")
             self.check_button(event, self.view.get_PauseButtonData(), "pauseButton")
-
-    def check_start_button(self, event):
-        startButton = self.view.get_StartButtonData()
-        startButtonCoords = startButton[0]
-        startButtonRect = startButton[1]
-        button_x = startButtonCoords[0]
-        button_y = startButtonCoords[1]
-        button_width = startButtonRect[0]
-        button_height = startButtonRect[1]
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            mouse_pos = pygame.mouse.get_pos()
-            if (
-                button_x <= mouse_pos[0] <= button_x + button_width
-                and button_y <= mouse_pos[1] <= button_y + button_height
-            ):
-                self.gamelogic.changeViewType(ViewType.GAME)
+            self.check_button(
+                event, self.view.get_ContinueButtonData(), "continueButton"
+            )
 
     def check_button(self, event, Button, tipo):
         ButtonCoords = Button[0]
@@ -86,6 +73,11 @@ class TetrisController:
                         ViewType.PAUSE, self.gamelogic.lightMode
                     )
                     self.gamelogic.pause = True
+                elif tipo == "continueButton":
+                    self.gamelogic.pause = False
+                    self.gamelogic.changeViewType(
+                        ViewType.GAME, self.gamelogic.lightMode
+                    )
 
     def check_gaze_direction(self):
         self._, self.frame = self.cap.read()

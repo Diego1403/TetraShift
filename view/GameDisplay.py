@@ -306,3 +306,6 @@ class GameDisplay:
 
     def get_PauseButtonData(self):
         return self.PauseButtonCoords, self.pause_button_image.get_size()
+
+    def get_ContinueButtonData(self):
+        return self.ContinueButtonCoords, self.continue_button_img.get_size()

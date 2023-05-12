@@ -42,7 +42,7 @@ class Gamelogic:
                 self.check_events()
             else:
                 pygame.mixer.music.pause()
-            CLOCK.tick(60)
+            CLOCK.tick(30)
             self.view.draw(self.currentPiece, self.nextPieces, self.lightMode)
             pygame.display.update()
             pygame.display.flip()

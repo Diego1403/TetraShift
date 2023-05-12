@@ -1,7 +1,12 @@
+import math as math
+
+from data.constants import NBOXES_HORIZONTAL
+
+
 class Block:
     def __init__(self, x, y):
-        self.x = round(x)
-        self.y = round(y)
+        self.x = math.ceil(x)
+        self.y = math.ceil(y)
 
     def getPos(self):
         return Block(self.x, self.y)
@@ -10,14 +15,16 @@ class Block:
         self.y = self.y + 0.1
 
     def GoLeft(self):
-        self.x = self.x - 1
+        if self.x > 0:
+            self.x = self.x - 1
 
     def GoRight(self):
-        self.x = self.x + 1
+        if self.x < NBOXES_HORIZONTAL - 1:
+            self.x = self.x + 1
 
     # converts x to int
     def getX(self):
-        return int(self.x)
+        return self.x
 
     def getY(self):
-        return int(self.y)
+        return math.ceil(self.y)

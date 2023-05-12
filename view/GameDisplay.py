@@ -175,16 +175,16 @@ class GameDisplay:
             self.drawPiece(drawPiece, i)
 
     def drawPiece(self, piece, i):  # draws the piece on the right side of the screen
-        CELL_SIZE = 13
+        CELL_SIZE = 15
         for block in piece.blocks:
             pygame.draw.rect(
                 self.screen,
                 piece.color,
                 (
-                    block.getX() + block.getX() * CELL_SIZE + WINDOW_WIDTH * 3 // 4,
+                    block.getX() + block.getX() * CELL_SIZE + WINDOW_WIDTH // 2 + 150,
                     block.getY()
                     + block.getY() * CELL_SIZE
-                    + GAME_HEIGHT // 3
+                    + GAME_HEIGHT // 4
                     + i * 4 * CELL_SIZE,
                     CELL_SIZE,
                     CELL_SIZE,

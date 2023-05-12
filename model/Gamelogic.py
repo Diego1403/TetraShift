@@ -213,9 +213,9 @@ class tetris_data:
     # The piece is a list of blocks and the color is a tuple with the RGB values
     def __init__(self):
         self.items = {
-            "I": [[Block(6, 0), Block(5, 0), Block(5, 1), Block(4, 1)], BLUE],
+            "I": [[Block(7, 0), Block(6, 0), Block(5, 0), Block(4, 0)], BLUE],
             "Z": [[Block(5, 0), Block(6, 0), Block(6, 1), Block(7, 1)], YELLOW],
-            "O": [[Block(5, 0), Block(5, 1), Block(5, 2), Block(5, 3)], PINK],
+            "O": [[Block(6, 0), Block(5, 0), Block(5, 1), Block(4, 1)], PINK],
             "J": [[Block(5, 0), Block(6, 0), Block(5, 1), Block(6, 1)], GREEN],
             "L": [[Block(5, 0), Block(6, 0), Block(7, 0), Block(5, 1)], BLUE],
             "T": [[Block(5, 0), Block(6, 0), Block(7, 0), Block(6, 1)], ORANGE],

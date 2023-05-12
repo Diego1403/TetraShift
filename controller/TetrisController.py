@@ -62,7 +62,7 @@ class TetrisController:
 
             if self.viewType == ViewType.GAMEOVER:
                 self.check_button(
-                    event, self.view.get_TryAgainButtonDatas(), "tryAgainButton"
+                    event, self.view.get_TryAgainButtonData(), "tryAgainButton"
                 )
 
     def check_button(self, event, Button, tipo):
@@ -101,6 +101,7 @@ class TetrisController:
                     self.gamelogic.gameOver = False
                     self.gamelogic.pause = False
                     self.gamelogic.reset_game()
+
                     self.gamelogic.changeViewType(
                         ViewType.GAME, self.gamelogic.lightMode
                     )

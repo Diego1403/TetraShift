@@ -15,13 +15,6 @@ class Gamelogic:
     def __init__(self):
         pygame.mixer.init()
 
-        self.score = 0
-        self.Grid = []
-        self.exitGame = False
-        self.pause = False
-        self.dir = Direction.DOWN
-        self.lightMode = True
-
         self.reset_game()
         self.full_row_sound = pygame.mixer.Sound("audio/full_row.mp3")
         self.gameover_sound = pygame.mixer.Sound("audio/game_over.mp3")
@@ -82,6 +75,12 @@ class Gamelogic:
         return canGoDown
 
     def reset_game(self):
+        self.score = 0
+        self.Grid = []
+        self.exitGame = False
+        self.pause = False
+        self.dir = Direction.DOWN
+        self.lightMode = True
         # initialize grid
         for x in range(NBOXES_HORIZONTAL):
             self.Grid.append([])

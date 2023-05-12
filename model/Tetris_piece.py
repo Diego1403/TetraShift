@@ -1,11 +1,12 @@
 import math
+import copy as copy
 from data.constants import NBOXES_HORIZONTAL
 
 
 class Tetris_piece:
     def __init__(self, blocks, color):
-        self.color = color
-        self.blocks = blocks
+        self.color = copy.deepcopy(color)
+        self.blocks = copy.deepcopy(blocks)
 
     def move_right(self):
         for block in self.blocks:

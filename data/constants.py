@@ -32,6 +32,7 @@ class Direction(Enum):
     LEFT = "-1"
     RIGHT = "1"
     ROTATE = "3"
+    NONE = "4"
 
 
 NBOXES_VERTICAL = 15

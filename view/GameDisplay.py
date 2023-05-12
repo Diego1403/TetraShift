@@ -12,7 +12,7 @@ class GameDisplay:
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
         self.font = pygame.font.SysFont("comicsansms", 30)
 
-        self.dir = Direction.DOWN
+        self.dir = Direction.NONE
         self.scoreFont = pygame.font.SysFont("comicsansms", 30)
         # default is light mode
         self.bg_img = pygame.image.load("Images/bg_light.png")

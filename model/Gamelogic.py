@@ -79,7 +79,7 @@ class Gamelogic:
         self.Grid = []
         self.exitGame = False
         self.pause = False
-        self.dir = Direction.DOWN
+        self.dir = Direction.NONE
         self.lightMode = True
         # initialize grid
         for x in range(NBOXES_HORIZONTAL):
@@ -99,7 +99,7 @@ class Gamelogic:
         self.currentPiece = Tetris_piece(new.blocks, new.color)
         self.view = GameDisplay(self.Grid, self.currentPiece)
         self.controller = TetrisController(self, self.view)
-        self.dir = Direction.DOWN
+        self.dir = Direction.NONE
         self.changeViewType(ViewType.GAME, self.lightMode)
         SCREEN.fill(BLACK)
 
@@ -145,24 +145,29 @@ class Gamelogic:
         blocks = self.currentPiece.blocks
         if self.can_go_down(blocks):
             self.currentPiece.move_down()
-
+        if self.dir == Direction.DOWN:
+            if self.can_go_down(blocks):
+                self.currentPiece.move_down(1)
+                self.dir = Direction.NONE
+            else:
+                self.setNewPiece()
         if self.dir == Direction.LEFT:
             if self.can_go_left(blocks):
                 self.currentPiece.move_left()
-                self.dir = Direction.DOWN
+                self.dir = Direction.NONE
 
         if self.dir == Direction.RIGHT:
             if self.can_go_right(blocks):
                 self.currentPiece.move_right()
-                self.dir = Direction.DOWN
+                self.dir = Direction.NONE
 
         if self.dir == Direction.ROTATE:
             if self.can_rotate(self.currentPiece.blocks):
                 self.clearLastPos()
-                self.currentPiece.rotate()
                 if self.can_go_down(self.currentPiece.blocks):
+                    self.currentPiece.rotate()
                     self.currentPiece.move_down()
-            self.dir = Direction.DOWN
+            self.dir = Direction.NONE
 
     def setNewPiece(self):
         for pos in self.currentPiece.blocks:

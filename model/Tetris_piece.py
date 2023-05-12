@@ -16,9 +16,9 @@ class Tetris_piece:
         for block in self.blocks:
             block.GoLeft()
 
-    def move_down(self):
+    def move_down(self, speed=0.1):
         for block in self.blocks:
-            block.GoDown()
+            block.GoDown(speed)
 
     def getLowestHeight(self):
         lowest_pos = 0
@@ -57,6 +57,8 @@ class Tetris_piece:
 
             block.x = new_x
             block.y = new_y
+        for block in self.blocks:
+            block.y = block.y + 0.5
 
     def __str__(self):
         for block in self.blocks:

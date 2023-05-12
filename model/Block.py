@@ -11,8 +11,9 @@ class Block:
     def getPos(self):
         return Block(self.x, self.y)
 
-    def GoDown(self):
-        self.y = self.y + 0.1
+    # default speed is 1
+    def GoDown(self, speed=0.1):
+        self.y = self.y + speed
 
     def GoLeft(self):
         if self.x > 0:

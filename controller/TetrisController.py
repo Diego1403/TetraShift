@@ -110,7 +110,7 @@ class TetrisController:
         self._, self.frame = self.cap.read()
         self.gray = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
         self.faces = self.detector(self.gray)
-        d = Direction.DOWN
+        d = Direction.NONE
         for face in self.faces:
             landmarks = self.predictor(self.gray, face)
             # detect blinking
@@ -153,7 +153,7 @@ class TetrisController:
                 cv2.putText(
                     self.frame, "CENTER", (50, 100), self.font, 2, (0, 0, 255), 3
                 )
-                d = Direction.DOWN
+                d = Direction.NONE
             else:
                 new_frame[:] = (255, 0, 0)
                 cv2.putText(self.frame, "LEFT", (50, 100), self.font, 2, (0, 0, 255), 3)

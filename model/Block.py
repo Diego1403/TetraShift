@@ -26,4 +26,4 @@ class Block:
         return self.x
 
     def getY(self):
-        return int(self.y)
+        return math.ceil(self.y)

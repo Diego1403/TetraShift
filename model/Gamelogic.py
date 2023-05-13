@@ -55,10 +55,7 @@ class Gamelogic:
         blocks = self.currentPiece.blocks
         for pos in blocks:
             if pos.getY() < NBOXES_VERTICAL:
-                if pos.x < NBOXES_HORIZONTAL-1 and pos.x >= 0:
-                    self.Grid[pos.x][pos.getY()] = 0
-                else:
-                    pass
+                self.Grid[pos.x][pos.getY()] = 0
 
     def can_go_down(self, blocks):
         lowestY = self.currentPiece.getLowestHeight()
@@ -70,8 +67,6 @@ class Gamelogic:
         else:
             for pos in blocks:
                 if pos.getY() < NBOXES_VERTICAL - 1:
-                    if pos.x > NBOXES_HORIZONTAL and pos.x < 0:
-                        pass
                     if self.Grid[pos.x][pos.getY() + 1] != 0:
                         canGoDown = False
                         self.setNewPiece()

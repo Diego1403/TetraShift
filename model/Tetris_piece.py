@@ -66,6 +66,8 @@ class Tetris_piece:
             block.y = new_y
         for block in self.blocks:
             block.y = block.y + 0.5
+        
+        
 
     def __str__(self):
         for block in self.blocks:

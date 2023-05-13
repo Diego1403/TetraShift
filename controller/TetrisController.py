@@ -1,3 +1,4 @@
+import time
 import pygame
 import cv2, sys
 import numpy as np
@@ -12,7 +13,8 @@ class TetrisController:
         self.gamelogic = gamelogic
         self.view = view
         self.viewType = ViewType.START
-        self.eye_detection = False
+        self.eye_detection = True
+        self.EYE_AR_THRESH = 0.19
         # gaze tracking init
         if self.eye_detection:
             self.init_gaze_tracking()
@@ -111,65 +113,98 @@ class TetrisController:
         self.gray = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
         self.faces = self.detector(self.gray)
         d = Direction.NONE
+
+        # Counters for closed eyes
+        self.right_eye_close_counter = 0
+        self.left_eye_close_counter = 0
+
+        # Threshold for eye closure in frames
+        eye_close_threshold = 1  # Set this according to your needs
+
         for face in self.faces:
             landmarks = self.predictor(self.gray, face)
-            # detect blinking
-            # the numbers are the index of the facial landmarks
-            left_eye_ratio = self.get_blinking_ratio(
-                [36, 37, 38, 39, 40, 41], landmarks
-            )
-            right_eye_ratio = self.get_blinking_ratio(
-                [42, 43, 44, 45, 46, 47], landmarks
-            )
+            left_eye_ear = self.get_ear([36, 37, 38, 39, 40, 41], landmarks)
+            right_eye_ear = self.get_ear([42, 43, 44, 45, 46, 47], landmarks)
 
-            mouth_ratio = self.get_mouth_ratio([61, 62, 63, 64, 65, 66, 67], landmarks)
+            # Average EAR
+            ear = (left_eye_ear + right_eye_ear) / 2.0
 
-            rotate = False
-            # both eyes are closed
-            if right_eye_ratio + left_eye_ratio / 2 > 6:
-                d = Direction.ROTATE
+            print("left eye EAR: ", left_eye_ear)
+            print("right eye EAR: ", right_eye_ear)
+            d = Direction.NONE
+            # consider that the eye is blink if the ear is less than threshold
+            if ear < self.EYE_AR_THRESH:
+                self.left_eye_close_counter += 1
+                self.right_eye_close_counter += 1
+                if (
+                    self.right_eye_close_counter >= eye_close_threshold
+                    and self.left_eye_close_counter >= eye_close_threshold
+                ):
+                    d = Direction.ROTATE
+                    # Reset counters
+                    self.right_eye_close_counter = 0
+                    self.left_eye_close_counter = 0
+                    time.sleep(0.05)
+                    return d
                 break
-            # rigt eye is closed
-            if right_eye_ratio > 6:
-                d = Direction.RIGHT
+
+            # right eye is closed
+            elif right_eye_ear < self.EYE_AR_THRESH:
+                self.right_eye_close_counter += 1
+                if self.right_eye_close_counter >= eye_close_threshold:
+                    d = Direction.RIGHT
+                    print("right eye close")
+                    # Reset counter
+                    self.right_eye_close_counter = 0
+                    time.sleep(0.05)
+                    return d
                 break
             # left eye is closed
-            if left_eye_ratio > 6:
-                d = Direction.LEFT
-                break
+            elif left_eye_ear < self.EYE_AR_THRESH :
+                self.left_eye_close_counter += 1
+                if self.left_eye_close_counter >= eye_close_threshold:
+                    d = Direction.LEFT
+                    print("left eye close")
+                    # Reset counter
+                    self.left_eye_close_counter = 0
+                    time.sleep(0.05)
+                    return d
 
-            # gaze detection
-            # the numbers are the index of the facial landmarks , we want to get all of the points in the left eye and draw a polygon around it
+                # gaze detection
+                # the numbers are the index of the facial landmarks , we want to get all of the points in the left eye and draw a polygon around it
 
-            # Gaze detection
-            gaze_ratio_left_eye = self.get_gaze_ratio(
-                [36, 37, 38, 39, 40, 41], landmarks
-            )
-            gaze_ratio_right_eye = self.get_gaze_ratio(
-                [42, 43, 44, 45, 46, 47], landmarks
-            )
-            gaze_ratio = (gaze_ratio_right_eye + gaze_ratio_left_eye) / 2
-            new_frame = np.zeros((500, 500, 3), np.uint8)
-            print(gaze_ratio)
-            if gaze_ratio <= 1:
-                cv2.putText(
-                    self.frame, "RIGHT", (50, 100), self.font, 2, (0, 0, 255), 3
-                )
-                d = Direction.RIGHT
-                break
-                new_frame[:] = (0, 0, 255)
-            elif 1 < gaze_ratio < 2:
-                cv2.putText(
-                    self.frame, "CENTER", (50, 100), self.font, 2, (0, 0, 255), 3
-                )
-                d = Direction.NONE
-            else:
-                new_frame[:] = (255, 0, 0)
-                cv2.putText(self.frame, "LEFT", (50, 100), self.font, 2, (0, 0, 255), 3)
-                d = Direction.LEFT
-                break
+                # Gaze detection
+                # gaze_ratio_left_eye = self.get_gaze_ratio(
+                #     [36, 37, 38, 39, 40, 41], landmarks
+                # )
+                # gaze_ratio_right_eye = self.get_gaze_ratio(
+                #     [42, 43, 44, 45, 46, 47], landmarks
+                # )
+                # gaze_ratio = (gaze_ratio_right_eye + gaze_ratio_left_eye) / 2
+                # new_frame = np.zeros((500, 500, 3), np.uint8)
+                # print(gaze_ratio)
+                # if gaze_ratio <= 1:
+                #     cv2.putText(
+                #         self.frame, "RIGHT", (50, 100), self.font, 2, (0, 0, 255), 3
+                #     )
+                #     print("gaze right")
+                #     d = Direction.RIGHT
+                #     break
+                #     new_frame[:] = (0, 0, 255)
+                # elif 1 < gaze_ratio < 2:
+                #     cv2.putText(
+                #         self.frame, "CENTER", (50, 100), self.font, 2, (0, 0, 255), 3
+                #     )
+                #     print("gaze center")
+                #     d = Direction.NONE
+                # else:
+                #     new_frame[:] = (255, 0, 0)
+                #     cv2.putText(self.frame, "LEFT", (50, 100), self.font, 2, (0, 0, 255), 3)
+                #     d = Direction.LEFT
+                #     print("gaze left")
+                #     break
 
-        cv2.imshow("Frame", self.frame)
+            #cv2.imshow("Frame", self.frame)
         return d
 
     def get_mouth_ratio(self, mouth_points, facial_landmarks):
@@ -290,28 +325,55 @@ class TetrisController:
     def hypot(self, x, y):
         return int(np.sqrt(x * x + y * y))
 
-    def get_blinking_ratio(self, eye_points, facial_landmarks):
-        left_point = (
-            facial_landmarks.part(eye_points[0]).x,
-            facial_landmarks.part(eye_points[0]).y,
+    # calculates the eye aspect ratio (EAR)
+    def get_ear(self, eye_points, facial_landmarks):
+        # compute the euclidean distances between the two sets of vertical eye landmarks (x, y)-coordinates
+        A = np.linalg.norm(
+            np.array(
+                (
+                    facial_landmarks.part(eye_points[1]).x,
+                    facial_landmarks.part(eye_points[1]).y,
+                )
+            )
+            - np.array(
+                (
+                    facial_landmarks.part(eye_points[5]).x,
+                    facial_landmarks.part(eye_points[5]).y,
+                )
+            )
         )
-        right_point = (
-            facial_landmarks.part(eye_points[3]).x,
-            facial_landmarks.part(eye_points[3]).y,
+        B = np.linalg.norm(
+            np.array(
+                (
+                    facial_landmarks.part(eye_points[2]).x,
+                    facial_landmarks.part(eye_points[2]).y,
+                )
+            )
+            - np.array(
+                (
+                    facial_landmarks.part(eye_points[4]).x,
+                    facial_landmarks.part(eye_points[4]).y,
+                )
+            )
         )
-        center_top = self.midpoint(
-            facial_landmarks.part(eye_points[1]), facial_landmarks.part(eye_points[2])
+
+        # compute the euclidean distance between the horizontal eye landmark (x, y)-coordinates
+        C = np.linalg.norm(
+            np.array(
+                (
+                    facial_landmarks.part(eye_points[0]).x,
+                    facial_landmarks.part(eye_points[0]).y,
+                )
+            )
+            - np.array(
+                (
+                    facial_landmarks.part(eye_points[3]).x,
+                    facial_landmarks.part(eye_points[3]).y,
+                )
+            )
         )
-        center_bottom = self.midpoint(
-            facial_landmarks.part(eye_points[5]), facial_landmarks.part(eye_points[4])
-        )
-        hor_line = cv2.line(self.frame, left_point, right_point, (0, 255, 0), 2)
-        ver_line = cv2.line(self.frame, center_top, center_bottom, (0, 255, 0), 2)
-        hor_line_lenght = self.hypot(
-            (left_point[0] - right_point[0]), (left_point[1] - right_point[1])
-        )
-        ver_line_lenght = self.hypot(
-            (center_top[0] - center_bottom[0]), (center_top[1] - center_bottom[1])
-        )
-        ratio = hor_line_lenght / ver_line_lenght
-        return ratio
+
+        # compute the eye aspect ratio
+        ear = (A + B) / (2.0 * C)
+
+        return ear

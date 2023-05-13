@@ -24,6 +24,8 @@ class ViewType(Enum):
     PAUSE = "1"
     GAMEOVER = "2"
     START = "3"
+    SETUP_RIGHT = "4"
+    SETUP_LEFT = "5"
 
 
 class Direction(Enum):

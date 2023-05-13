@@ -118,7 +118,31 @@ class GameDisplay:
             self.drawGameOverScreen(lightmode)
         elif self.viewtype == ViewType.PAUSE:
             self.drawPauseScreen(lightmode)
+        elif self.viewtype == ViewType.SETUP_RIGHT:
+            self.drawSetupRightScreen(lightmode)
+        elif self.viewtype == ViewType.SETUP_LEFT:
+            self.drawSetupLeftScreen(lightmode)
+    def drawSetupLeftScreen(self,lightmode):
+        self.lightmode = True
+        self.bg_img = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
+        self.bg_img.fill((255, 255, 255)) 
+        
+        font = pygame.font.Font(None, 50)  # Adjust the size (50 here) as needed
+        text = font.render('LOOK LEFT', True, (0, 0, 0)) 
+        
+        self.bg_img.blit(text, (100, 100)) 
 
+
+    def drawSetupRightScreen(self,lightmode):
+        self.lightmode = True
+        self.bg_img = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
+        self.bg_img.fill((255, 255, 255)) 
+        
+        font = pygame.font.Font(None, 50)  # Adjust the size (50 here) as needed
+        text = font.render('LOOK RIGHT', True, (0, 0, 0)) 
+        
+        self.bg_img.blit(text, (100, 100)) 
+    
     def setViewType(self, viewtype, lightmode):
         self.lightmode = lightmode
         self.viewtype = viewtype
@@ -150,6 +174,11 @@ class GameDisplay:
                 self.bg_img = pygame.transform.scale(
                     self.bg_img, (WINDOW_WIDTH, WINDOW_HEIGHT)
                 )
+        elif viewtype == ViewType.SETUP_RIGHT:
+            self.drawSetupRightScreen(lightmode)
+        elif viewtype == ViewType.SETUP_LEFT:
+            self.drawSetupLeftScreen(lightmode)
+                
         elif viewtype == ViewType.GAMEOVER:
             self.drawGameOverScreen(lightmode)
         elif viewtype == ViewType.PAUSE:

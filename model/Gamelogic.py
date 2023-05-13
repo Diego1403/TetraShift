@@ -34,6 +34,7 @@ class Gamelogic:
 
     def play(self):
         pygame.mixer.music.play(-1)
+        pygame.mixer.music.pause()
         while not self.exitGame:
             self.handle_event()
             if self.currentViewType == ViewType.GAME and not self.pause:

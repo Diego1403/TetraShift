@@ -16,12 +16,10 @@ class Block:
         self.y = self.y + speed
 
     def GoLeft(self):
-        if self.x > 0:
-            self.x = self.x - 1
+        self.x = self.x - 1
 
     def GoRight(self):
-        if self.x < NBOXES_HORIZONTAL - 1:
-            self.x = self.x + 1
+        self.x = self.x + 1
 
     # converts x to int
     def getX(self):

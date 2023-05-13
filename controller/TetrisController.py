@@ -125,8 +125,17 @@ class TetrisController:
             mouth_ratio = self.get_mouth_ratio([61, 62, 63, 64, 65, 66, 67], landmarks)
 
             rotate = False
+            # both eyes are closed
             if right_eye_ratio + left_eye_ratio / 2 > 6:
                 d = Direction.ROTATE
+                break
+            # rigt eye is closed
+            if right_eye_ratio > 6:
+                d = Direction.RIGHT
+                break
+            # left eye is closed
+            if left_eye_ratio > 6:
+                d = Direction.LEFT
                 break
 
             # gaze detection

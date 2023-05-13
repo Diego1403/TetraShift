@@ -50,7 +50,6 @@ class Gamelogic:
     def check_events(self):
         self.checkForFullRows()
         self.view.updateScore(self.score)
-        self.checkGameOver()
 
     def clearLastPos(self):
         blocks = self.currentPiece.blocks
@@ -62,7 +61,7 @@ class Gamelogic:
         lowestY = self.currentPiece.getLowestHeight()
         canGoDown = True
         # We check if we can go down
-        if lowestY == NBOXES_VERTICAL - 1:
+        if lowestY >= NBOXES_VERTICAL - 1:
             canGoDown = False
             self.setNewPiece()
         else:
@@ -106,8 +105,8 @@ class Gamelogic:
     def can_go_left(self, blocks):
         mostLeft = self.currentPiece.getMostLeft()
         canGoLeft = True
-        if mostLeft == 0:
-            canGoLeft = False
+        if mostLeft <= 0:
+            return False
         else:
             for pos in blocks:
                 if pos.x > 0:
@@ -119,8 +118,8 @@ class Gamelogic:
     def can_go_right(self, blocks):
         mostRight = self.currentPiece.getMostRight()
         canGoRight = True
-        if mostRight == NBOXES_HORIZONTAL - 1:
-            canGoRight = False
+        if mostRight >= NBOXES_HORIZONTAL - 1:
+            return False
         else:
             for pos in blocks:
                 if pos.x < NBOXES_HORIZONTAL - 1:
@@ -132,7 +131,16 @@ class Gamelogic:
     def can_rotate(self, blocks):
         canRotate = True
         for pos in blocks:
-            if pos.getY() < 3:  # 3 is the number of blocks from the top
+            if pos.x < 0 or pos.x > NBOXES_HORIZONTAL - 1:
+                canRotate = False
+                break
+            if pos.getY() > NBOXES_VERTICAL - 1:
+                canRotate = False
+                break
+            if self.Grid[pos.x][pos.getY()] != 0:
+                canRotate = False
+                break
+            if pos.getY() < 4:  # 3 is the number of blocks from the top
                 canRotate = False
                 break
         return canRotate
@@ -170,13 +178,18 @@ class Gamelogic:
             self.dir = Direction.NONE
 
     def setNewPiece(self):
+        if self.currentPiece.getMostTop() == 0:
+            self.pause = True
+            self.changeViewType(ViewType.GAMEOVER, self.lightMode)
+            self.gameover_sound.play()
+
         for pos in self.currentPiece.blocks:
             self.Grid[pos.x][pos.getY()] = self.currentPiece.color
         del self.currentPiece
         data = tetris_data().items
         newselected = random.choice(list(data.items()))[1]
-        newblocks = copy.copy(newselected[0])
-        newcolor = copy.copy(newselected[1])
+        newblocks = copy.deepcopy(newselected[0])
+        newcolor = copy.deepcopy(newselected[1])
         self.nextPieces.put(Tetris_piece(newblocks, newcolor))
         newPiece = self.nextPieces.get()
         self.currentPiece = Tetris_piece(newPiece.blocks, newPiece.color)
@@ -202,14 +215,6 @@ class Gamelogic:
                     self.Grid[x][i] = self.Grid[x][i - 1]
             for x in range(NBOXES_HORIZONTAL):
                 self.Grid[x][0] = 0
-
-    def checkGameOver(self):
-        for x in range(NBOXES_HORIZONTAL):
-            if self.Grid[x][0] != 0:
-                self.pause = True
-                self.changeViewType(ViewType.GAMEOVER, self.lightMode)
-                self.gameover_sound.play()
-                return
 
 
 class tetris_data:

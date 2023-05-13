@@ -1,6 +1,6 @@
 import math
 import copy as copy
-from data.constants import NBOXES_HORIZONTAL
+from data.constants import NBOXES_HORIZONTAL, NBOXES_VERTICAL
 
 
 class Tetris_piece:
@@ -10,9 +10,15 @@ class Tetris_piece:
 
     def move_right(self):
         for block in self.blocks:
+            if block.x > NBOXES_HORIZONTAL - 1:
+                pass
+        for block in self.blocks:
             block.GoRight()
 
     def move_left(self):
+        for block in self.blocks:
+            if block.x < 0:
+                pass
         for block in self.blocks:
             block.GoLeft()
 
@@ -41,6 +47,13 @@ class Tetris_piece:
             if block.x > mostRight_pos:
                 mostRight_pos = block.x
         return mostRight_pos
+
+    def getMostTop(self):
+        mostTop_pos = NBOXES_VERTICAL
+        for block in self.blocks:
+            if block.y < mostTop_pos:
+                mostTop_pos = block.y
+        return mostTop_pos
 
     def rotate(self):
         center_x = sum([block.x for block in self.blocks]) // len(self.blocks)

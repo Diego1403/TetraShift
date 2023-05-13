@@ -59,15 +59,9 @@ class Tetris_piece:
         center_x = sum([block.x for block in self.blocks]) // len(self.blocks)
         center_y = sum([block.getY() for block in self.blocks]) // len(self.blocks)
 
-        if center_x == 0:
-            center_x = 1
-        if center_y == 0:
-            center_y = 1
-
         for block in self.blocks:
             new_x = center_x + (block.getY() - center_y)
             new_y = center_y - (block.x - center_x)
-
             block.x = new_x
             block.y = new_y
         for block in self.blocks:

@@ -1,5 +1,5 @@
-# TetraShift - Readme
-
+# TetraShift
+Tetris with open-cv
 TetraShift is a Tetris game that uses a custom controller for user input. In addition to traditional keyboard controls, TetraShift utilizes gaze and blink detection for a more immersive and interactive gaming experience.
 
 ## Features

@@ -10,7 +10,11 @@ from data.constants import Direction, ViewType
 
 class TetrisController:
     def __init__(self, gamelogic, view):
-        self.BLINK_THRESHOLD = 8
+        # you must manually set the thresholds
+        self.BLINK_THRESHOLD = 6
+        self.BLINK_TIME = 1
+        self.LEFT_THRESHOLD = 3
+        self.RIGHT_THRESHOLD = 0.4
         
         self.gamelogic = gamelogic
         self.view = view
@@ -129,33 +133,21 @@ class TetrisController:
 
             rotate = False
             # both eyes are closed
+            ## for calculating the blink_threshold, we need to know the ratio of the eyes when they are closed
             print ("blinkratio",(right_eye_ratio + left_eye_ratio) / 2)
             if (right_eye_ratio + left_eye_ratio) / 2 > self.BLINK_THRESHOLD:
                 if self.blink_start_time == 0: # if this is the start of the blink
                     self.blink_start_time = time.time() # record the start time
                 else:
                     # if th)e eyes have been closed for 3 seconds
-                    if time.time() - self.blink_start_time >= 0.5:
+                    if time.time() - self.blink_start_time >= self.BLINK_TIME:
                         d = Direction.ROTATE
                         print ("rotate")
-                        time.sleep(0.5)
+                        time.sleep(1)
                         return d
                         break
             else:
                 self.blink_start_time = 0 # if eyes are not closed, reset the start time
-
-            # rigt eye is closed
-            if right_eye_ratio > 6:
-                d = Direction.RIGHT
-                time.sleep(0.2)
-                return d
-                break
-            # left eye is closed
-            if left_eye_ratio > 6:
-                d = Direction.LEFT
-                time.sleep(0.2)
-                return d
-                break
 
             # gaze detection
             # the numbers are the index of the facial landmarks , we want to get all of the points in the left eye and draw a polygon around it
@@ -169,24 +161,32 @@ class TetrisController:
             )
             gaze_ratio = (gaze_ratio_right_eye + gaze_ratio_left_eye) / 2
             new_frame = np.zeros((500, 500, 3), np.uint8)
-            #print(gaze_ratio)
-            if gaze_ratio <= 1:
+            ##used for calculating LEFT_THRESHOLD and RIGHT_THRESHOLD for the first time 
+            print("gaze ratio:",gaze_ratio)
+            if gaze_ratio <= self.RIGHT_THRESHOLD:
                 cv2.putText(
                     self.frame, "RIGHT", (50, 100), self.font, 2, (0, 0, 255), 3
                 )
                 d = Direction.RIGHT
+                cv2.imshow("Frame", self.frame)
+                time.sleep(0.2)
+                return d
                 break
-                new_frame[:] = (0, 0, 255)
-            elif 1 < gaze_ratio < 2:
+            elif self.RIGHT_THRESHOLD < gaze_ratio < self.LEFT_THRESHOLD:
                 cv2.putText(
                     self.frame, "CENTER", (50, 100), self.font, 2, (0, 0, 255), 3
                 )
+                cv2.imshow("Frame", self.frame)
                 d = Direction.NONE
+                break
             else:
                 new_frame[:] = (255, 0, 0)
                 cv2.putText(self.frame, "LEFT", (50, 100), self.font, 2, (0, 0, 255), 3)
                 d = Direction.LEFT
-                break
+                cv2.imshow("Frame", self.frame)
+                time.sleep(0.2)
+                return d
+                
 
         cv2.imshow("Frame", self.frame)
         return d

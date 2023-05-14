@@ -1,3 +1,4 @@
+import time
 import pygame
 import cv2, sys
 import numpy as np
@@ -9,13 +10,17 @@ from data.constants import Direction, ViewType
 
 class TetrisController:
     def __init__(self, gamelogic, view):
+        self.BLINK_THRESHOLD = 8
+        
         self.gamelogic = gamelogic
         self.view = view
         self.viewType = ViewType.START
         self.eye_detection = True
+        
         # gaze tracking init
         if self.eye_detection:
             self.init_gaze_tracking()
+        self.blink_start_time = 0
 
     def init_gaze_tracking(self):
         self.cap = cv2.VideoCapture(0)
@@ -113,7 +118,6 @@ class TetrisController:
         d = Direction.NONE
         for face in self.faces:
             landmarks = self.predictor(self.gray, face)
-            # detect blinking
             # the numbers are the index of the facial landmarks
             left_eye_ratio = self.get_blinking_ratio(
                 [36, 37, 38, 39, 40, 41], landmarks
@@ -125,16 +129,32 @@ class TetrisController:
 
             rotate = False
             # both eyes are closed
-            if right_eye_ratio + left_eye_ratio / 2 > 6:
-                d = Direction.ROTATE
-                break
+            print ("blinkratio",(right_eye_ratio + left_eye_ratio) / 2)
+            if (right_eye_ratio + left_eye_ratio) / 2 > self.BLINK_THRESHOLD:
+                if self.blink_start_time == 0: # if this is the start of the blink
+                    self.blink_start_time = time.time() # record the start time
+                else:
+                    # if th)e eyes have been closed for 3 seconds
+                    if time.time() - self.blink_start_time >= 0.5:
+                        d = Direction.ROTATE
+                        print ("rotate")
+                        time.sleep(0.5)
+                        return d
+                        break
+            else:
+                self.blink_start_time = 0 # if eyes are not closed, reset the start time
+
             # rigt eye is closed
             if right_eye_ratio > 6:
                 d = Direction.RIGHT
+                time.sleep(0.2)
+                return d
                 break
             # left eye is closed
             if left_eye_ratio > 6:
                 d = Direction.LEFT
+                time.sleep(0.2)
+                return d
                 break
 
             # gaze detection
@@ -149,7 +169,7 @@ class TetrisController:
             )
             gaze_ratio = (gaze_ratio_right_eye + gaze_ratio_left_eye) / 2
             new_frame = np.zeros((500, 500, 3), np.uint8)
-            print(gaze_ratio)
+            #print(gaze_ratio)
             if gaze_ratio <= 1:
                 cv2.putText(
                     self.frame, "RIGHT", (50, 100), self.font, 2, (0, 0, 255), 3

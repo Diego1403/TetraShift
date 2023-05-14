@@ -11,9 +11,12 @@ from data.constants import Direction, ViewType
 class TetrisController:
     def __init__(self, gamelogic, view):
         # you must manually set the thresholds
+        # to calibrate you the BLINK_THESHOLD , you need to blink and put the value that appears on average on blink ratio
         self.BLINK_THRESHOLD = 6
         self.BLINK_TIME = 1
+        #to calibrate you the LEFT_THESHOLD , you need to look left and put the value that appears on average on gaze ratio
         self.LEFT_THRESHOLD = 3
+        #to calibrate you the RIGHT_THESHOLD , you need to look right and put the value that appears on average on gaze ratio  
         self.RIGHT_THRESHOLD = 0.4
         
         self.gamelogic = gamelogic

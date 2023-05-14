@@ -12,7 +12,7 @@ class TetrisController:
         self.gamelogic = gamelogic
         self.view = view
         self.viewType = ViewType.START
-        self.eye_detection = False
+        self.eye_detection = True
         # gaze tracking init
         if self.eye_detection:
             self.init_gaze_tracking()
@@ -122,7 +122,6 @@ class TetrisController:
                 [42, 43, 44, 45, 46, 47], landmarks
             )
 
-            mouth_ratio = self.get_mouth_ratio([61, 62, 63, 64, 65, 66, 67], landmarks)
 
             rotate = False
             # both eyes are closed
@@ -171,54 +170,6 @@ class TetrisController:
 
         cv2.imshow("Frame", self.frame)
         return d
-
-    def get_mouth_ratio(self, mouth_points, facial_landmarks):
-        mouth_region = np.array(
-            [
-                (
-                    facial_landmarks.part(mouth_points[0]).x,
-                    facial_landmarks.part(mouth_points[0]).y,
-                ),
-                (
-                    facial_landmarks.part(mouth_points[1]).x,
-                    facial_landmarks.part(mouth_points[1]).y,
-                ),
-                (
-                    facial_landmarks.part(mouth_points[2]).x,
-                    facial_landmarks.part(mouth_points[2]).y,
-                ),
-                (
-                    facial_landmarks.part(mouth_points[3]).x,
-                    facial_landmarks.part(mouth_points[3]).y,
-                ),
-                (
-                    facial_landmarks.part(mouth_points[4]).x,
-                    facial_landmarks.part(mouth_points[4]).y,
-                ),
-                (
-                    facial_landmarks.part(mouth_points[5]).x,
-                    facial_landmarks.part(mouth_points[5]).y,
-                ),
-                (
-                    facial_landmarks.part(mouth_points[6]).x,
-                    facial_landmarks.part(mouth_points[6]).y,
-                ),
-            ],
-            np.int32,
-        )
-
-        # we draw a polygon around the left eye
-        height, width, _ = self.frame.shape
-        mask = np.zeros((height, width), np.uint8)
-        cv2.polylines(mask, [mouth_region], True, 255, 2)
-        cv2.fillPoly(mask, [mouth_region], 255)
-        eye = cv2.bitwise_and(self.gray, self.gray, mask=mask)
-        # we get the min and max values of the x and y coordinates
-        min_x = np.min(mouth_region[:, 0])
-        max_x = np.max(mouth_region[:, 0])
-        min_y = np.min(mouth_region[:, 1])
-        max_y = np.max(mouth_region[:, 1])
-        # we get the gray eye
 
     # we divide the left side white pixels by the right side white pixels
     def get_gaze_ratio(self, eye_points, facial_landmarks):

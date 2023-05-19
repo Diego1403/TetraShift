@@ -2,6 +2,10 @@
 Tetris with open-cv
 TetraShift is a Tetris game that uses a custom controller for user input. In addition to traditional keyboard controls, TetraShift utilizes gaze and blink detection for a more immersive and interactive gaming experience.
 
+## Demo
+
+https://github.com/Diego1403/TetraShift/assets/36863909/79129650-df11-4d01-8c1d-96c56674e45b
+
 ## Features
 
 - Custom TetrisController class
@@ -12,6 +16,9 @@ TetraShift is a Tetris game that uses a custom controller for user input. In add
 ## Dependencies
 
 - Python 3
+
+
+
 - Pygame
 - OpenCV (cv2)
 - Dlib

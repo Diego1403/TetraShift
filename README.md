@@ -67,6 +67,9 @@ We welcome contributions from the open-source community. If you have ideas for i
 
 We'd like to acknowledge the open-source community for providing the resources and libraries that made this project possible. Specifically, we would like to thank the creators of Pygame, OpenCV, and Dlib for their fantastic work.
 
+* I would also like to mention that I was inspired by the following lectures: 
+* https://www.youtube.com/playlist?list=PL6Yc5OUgcoTlvHb5OfFLUJ90ofBuoU5g8
+
 ## License
 
 This project is licensed under the MIT License.

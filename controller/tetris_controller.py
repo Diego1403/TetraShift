@@ -32,21 +32,21 @@ class TetrisController:
 
     def handle_event(self):
         if self.eye_detection:
-            self.gamelogic.dir = self.check_gaze_direction()
+            self.gamelogic.set_direction(self.check_gaze_direction())
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                self.gamelogic.exit_game = True
+                self.gamelogic.request_exit()
                 pygame.display.quit()
                 quit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
-                    self.gamelogic.dir = Direction.LEFT
+                    self.gamelogic.set_direction(Direction.LEFT)
                 if event.key == pygame.K_RIGHT:
-                    self.gamelogic.dir = Direction.RIGHT
+                    self.gamelogic.set_direction(Direction.RIGHT)
                 if event.key == pygame.K_UP:
-                    self.gamelogic.dir = Direction.ROTATE
+                    self.gamelogic.set_direction(Direction.ROTATE)
                 if event.key == pygame.K_DOWN:
-                    self.gamelogic.dir = Direction.DOWN
+                    self.gamelogic.set_direction(Direction.DOWN)
 
             self.view_type = self.view.get_view_type()
             if self.view_type == ViewType.START:
@@ -93,19 +93,19 @@ class TetrisController:
                     self.gamelogic.change_view_type(
                         ViewType.PAUSE, self.gamelogic.light_mode
                     )
-                    self.gamelogic.pause = True
+                    self.gamelogic.set_paused(True)
                 elif tipo == "continueButton":
-                    self.gamelogic.pause = False
+                    self.gamelogic.set_paused(False)
                     self.gamelogic.change_view_type(
                         ViewType.GAME, self.gamelogic.light_mode
                     )
                 elif tipo == "exitButton":
-                    self.gamelogic.exit_game = True
+                    self.gamelogic.request_exit()
                     pygame.display.quit()
                     quit()
                 elif tipo == "tryAgainButton":
                     self.gamelogic.exit_game = False
-                    self.gamelogic.pause = False
+                    self.gamelogic.set_paused(False)
                     self.gamelogic.reset_game()
                     self.gamelogic.change_view_type(
                         ViewType.GAME, self.gamelogic.light_mode

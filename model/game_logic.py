@@ -1,31 +1,30 @@
-import random
-import copy
 import queue
 
 import pygame
 
-from model.block import Block
 from model.tetris_piece import TetrisPiece
+from model.piece_factory import PieceFactory
 from view.game_display import GameDisplay
 from controller.tetris_controller import TetrisController
-from data.colors import BLACK, BLUE, YELLOW, PINK, GREEN, ORANGE, RED
+from data.colors import BLACK
 from data.enums import ViewType, Direction
 from data.config import NBOXES_HORIZONTAL, NBOXES_VERTICAL
-from data.constants import SCREEN, CLOCK
 
 
 class GameLogic:
-    def __init__(self):
+    def __init__(self, screen, clock):
+        self.screen = screen
+        self.clock = clock
+
         pygame.mixer.init()
 
         self.reset_game()
         self.full_row_sound = pygame.mixer.Sound("audio/full_row.mp3")
         self.gameover_sound = pygame.mixer.Sound("audio/game_over.mp3")
-        self.music = pygame.mixer.music.load("audio/music.mp3")
+        pygame.mixer.music.load("audio/music.mp3")
         self.change_view_type(ViewType.START, self.light_mode)
-        pygame.init()
 
-        SCREEN.fill(BLACK)
+        self.screen.fill(BLACK)
 
     def handle_event(self):
         self.controller.handle_event()
@@ -34,6 +33,15 @@ class GameLogic:
         self.current_view_type = viewtype
         self.light_mode = lightmode
         self.view.set_view_type(self.current_view_type, self.light_mode)
+
+    def set_direction(self, direction):
+        self.dir = direction
+
+    def set_paused(self, paused):
+        self.pause = paused
+
+    def request_exit(self):
+        self.exit_game = True
 
     def play(self):
         pygame.mixer.music.play(-1)
@@ -45,7 +53,7 @@ class GameLogic:
                 self.check_game_events()
             else:
                 pygame.mixer.music.pause()
-            CLOCK.tick(30)
+            self.clock.tick(30)
             self.view.draw(self.current_piece, self.next_pieces, self.light_mode)
             pygame.display.update()
             pygame.display.flip()
@@ -88,22 +96,17 @@ class GameLogic:
             for y in range(NBOXES_VERTICAL):
                 self.grid[x].append(0)
 
-        data = PieceFactory().items
-
         self.next_pieces = queue.Queue(5)
-        for i in range(5):
-            new_selected = random.choice(list(data.items()))[1]
-            new_blocks = copy.copy(new_selected[0])
-            new_color = copy.copy(new_selected[1])
-            self.next_pieces.put(TetrisPiece(new_blocks, new_color))
+        for _ in range(5):
+            self.next_pieces.put(PieceFactory.create_random())
 
         new = self.next_pieces.get()
         self.current_piece = TetrisPiece(new.blocks, new.color)
-        self.view = GameDisplay(self.grid, self.current_piece)
+        self.view = GameDisplay(self.grid, self.current_piece, self.screen)
         self.controller = TetrisController(self, self.view)
         self.dir = Direction.NONE
         self.change_view_type(ViewType.GAME, self.light_mode)
-        SCREEN.fill(BLACK)
+        self.screen.fill(BLACK)
 
     def can_go_left(self, blocks):
         most_left = self.current_piece.get_most_left()
@@ -187,11 +190,7 @@ class GameLogic:
             self.grid[pos.x][pos.get_y()] = self.current_piece.color
         del self.current_piece
 
-        data = PieceFactory().items
-        new_selected = random.choice(list(data.items()))[1]
-        new_blocks = copy.deepcopy(new_selected[0])
-        new_color = copy.deepcopy(new_selected[1])
-        self.next_pieces.put(TetrisPiece(new_blocks, new_color))
+        self.next_pieces.put(PieceFactory.create_random())
         new_piece = self.next_pieces.get()
         self.current_piece = TetrisPiece(new_piece.blocks, new_piece.color)
 
@@ -214,16 +213,3 @@ class GameLogic:
                     self.grid[x][i] = self.grid[x][i - 1]
             for x in range(NBOXES_HORIZONTAL):
                 self.grid[x][0] = 0
-
-
-class PieceFactory:
-    def __init__(self):
-        self.items = {
-            "I": [[Block(7, 0), Block(6, 0), Block(5, 0), Block(4, 0)], BLUE],
-            "Z": [[Block(5, 0), Block(6, 0), Block(6, 1), Block(7, 1)], YELLOW],
-            "O": [[Block(6, 0), Block(5, 0), Block(5, 1), Block(4, 1)], PINK],
-            "J": [[Block(5, 0), Block(6, 0), Block(5, 1), Block(6, 1)], GREEN],
-            "L": [[Block(5, 0), Block(6, 0), Block(7, 0), Block(5, 1)], BLUE],
-            "T": [[Block(5, 0), Block(6, 0), Block(7, 0), Block(6, 1)], ORANGE],
-            "S": [[Block(5, 0), Block(6, 1), Block(6, 0), Block(7, 1)], RED],
-        }

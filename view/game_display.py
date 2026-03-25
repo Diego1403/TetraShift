@@ -1,7 +1,7 @@
 import pygame
 
 from data.colors import (
-    BLACK, WHITE, RED, BLUE, GREEN, YELLOW, PINK, PURPLE, ORANGE,
+    WHITE, RED, BLUE, GREEN, YELLOW, PINK, PURPLE, ORANGE,
 )
 from data.enums import ViewType
 from data.config import (
@@ -14,90 +14,93 @@ from data.config import (
     EXITBUTTONWIDTH, EXITBUTTONHEIGHT,
     TRYAGAINBUTTONWIDTH, TRYAGAINBUTTONHEIGHT,
 )
-from data.constants import SCREEN
+from view.ui_button import UIButton
 
 
 class GameDisplay:
-    def __init__(self, board, current_piece):
+    def __init__(self, board, current_piece, screen):
         self.board = board
         self.current_piece = current_piece
         self.score = 0
-        self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+        self.screen = screen
         self.font = pygame.font.SysFont("comicsansms", 30)
-        self.bg_img = pygame.image.load("Images/bg_light.png")
-        self.pause_screen_dark_image = pygame.image.load(
-            "Images/pause_screen_dark.png"
-        )
-        self.pause_screen_light_image = pygame.image.load(
-            "Images/pause_screen_light.png"
-        )
-        self.bg_img = pygame.transform.scale(self.bg_img, (WINDOW_WIDTH, WINDOW_HEIGHT))
         self.viewtype = ViewType.START
-        self.start_button_image = pygame.image.load("Images/start_button.png")
-        self.pause_button_image = pygame.image.load("Images/pause_button.png")
-        self.continue_button_img = pygame.image.load("Images/continueGame_button.png")
-        self.exit_button_img_dark = pygame.image.load("Images/exitGame_button_dark.png")
-        self.exit_button_img_light = pygame.image.load(
-            "Images/exitGame_button_light.png"
-        )
-        self.toogle_dark_img = pygame.image.load("Images/toogle_button_dark.png")
-        self.toogle_light_img = pygame.image.load("Images/toogle_button_light.png")
-        self.try_again_img_dark = pygame.image.load("Images/try_again_button_dark.png")
-        self.try_again_img_light = pygame.image.load(
-            "Images/try_again_button_light.png"
-        )
 
+        # Cache backgrounds
+        self._bg_cache = self._load_backgrounds()
+        self.bg_img = self._bg_cache[("start", True)]
+
+        # Cache grid image
+        self._grid_img = pygame.image.load("Images/bg_grid.png")
+        self._grid_img = pygame.transform.scale(self._grid_img, (GAME_WIDTH, GAME_HEIGHT))
+
+        # Cache block images
         self.block_images = self._load_block_images()
 
-        self.start_button_image = pygame.transform.scale(
-            self.start_button_image,
+        # Build UIButton instances
+        self.start_button = self._make_button(
+            "Images/start_button.png", None,
             (STARTBUTTONWIDTH, STARTBUTTONHEIGHT),
+            ((WINDOW_WIDTH // 2) - STARTBUTTONWIDTH // 2,
+             2 * WINDOW_HEIGHT // 3 + STARTBUTTONHEIGHT // 2),
         )
-        self.start_button_coords = (
-            (WINDOW_WIDTH // 2) - STARTBUTTONWIDTH // 2,
-            2 * WINDOW_HEIGHT // 3 + STARTBUTTONHEIGHT // 2,
+        self.pause_button = self._make_button(
+            "Images/pause_button.png", None,
+            (PAUSEBUTTONWIDTH, PAUSEBUTTONHEIGHT),
+            ((WINDOW_WIDTH // 2) - PAUSEBUTTONWIDTH // 2,
+             2 * WINDOW_HEIGHT // 3 + PAUSEBUTTONHEIGHT // 2),
+        )
+        self.continue_button = self._make_button(
+            "Images/continueGame_button.png", None,
+            (CONTINUEBUTTONWIDTH, CONTINUEBUTTONHEIGHT),
+            ((WINDOW_WIDTH // 2) - CONTINUEBUTTONWIDTH // 2,
+             WINDOW_HEIGHT // 3 - CONTINUEBUTTONHEIGHT // 2),
+        )
+        self.exit_button = self._make_button(
+            "Images/exitGame_button_light.png",
+            "Images/exitGame_button_dark.png",
+            (EXITBUTTONWIDTH, EXITBUTTONHEIGHT),
+            ((WINDOW_WIDTH // 2) - EXITBUTTONWIDTH // 2,
+             (WINDOW_HEIGHT // 3) - EXITBUTTONHEIGHT // 2 + 100),
+        )
+        self.try_again_button = self._make_button(
+            "Images/try_again_button_light.png",
+            "Images/try_again_button_dark.png",
+            (TRYAGAINBUTTONWIDTH, TRYAGAINBUTTONHEIGHT),
+            ((WINDOW_WIDTH // 2) - TRYAGAINBUTTONWIDTH // 2,
+             2 * WINDOW_HEIGHT // 3 + TRYAGAINBUTTONHEIGHT // 2),
         )
 
-        self.pause_button_image = pygame.transform.scale(
-            self.pause_button_image,
-            (PAUSEBUTTONWIDTH, PAUSEBUTTONHEIGHT),
+    @staticmethod
+    def _make_button(light_path, dark_path, size, coords):
+        light_img = pygame.transform.scale(
+            pygame.image.load(light_path), size
         )
-        self.pause_button_coords = (
-            (WINDOW_WIDTH // 2) - PAUSEBUTTONWIDTH // 2,
-            2 * WINDOW_HEIGHT // 3 + PAUSEBUTTONHEIGHT // 2,
+        dark_img = None
+        if dark_path:
+            dark_img = pygame.transform.scale(
+                pygame.image.load(dark_path), size
+            )
+        return UIButton(
+            image_light=light_img,
+            image_dark=dark_img,
+            coords=coords,
+            size=size,
         )
-        self.continue_button_img = pygame.transform.scale(
-            self.continue_button_img,
-            (CONTINUEBUTTONWIDTH, CONTINUEBUTTONHEIGHT),
-        )
-        self.continue_button_coords = (
-            (WINDOW_WIDTH // 2) - CONTINUEBUTTONWIDTH // 2,
-            WINDOW_HEIGHT // 3 - CONTINUEBUTTONHEIGHT // 2,
-        )
-        self.exit_button_img_light = pygame.transform.scale(
-            self.exit_button_img_light,
-            (EXITBUTTONWIDTH, EXITBUTTONHEIGHT),
-        )
-        self.exit_button_img_dark = pygame.transform.scale(
-            self.exit_button_img_dark,
-            (EXITBUTTONWIDTH, EXITBUTTONHEIGHT),
-        )
-        self.exit_button_coords = (
-            (WINDOW_WIDTH // 2) - EXITBUTTONWIDTH // 2,
-            (WINDOW_HEIGHT // 3) - EXITBUTTONHEIGHT // 2 + 100,
-        )
-        self.try_again_img_light = pygame.transform.scale(
-            self.try_again_img_light,
-            (TRYAGAINBUTTONWIDTH, TRYAGAINBUTTONHEIGHT),
-        )
-        self.try_again_img_dark = pygame.transform.scale(
-            self.try_again_img_dark,
-            (TRYAGAINBUTTONWIDTH, TRYAGAINBUTTONHEIGHT),
-        )
-        self.try_again_button_coords = (
-            (WINDOW_WIDTH // 2) - TRYAGAINBUTTONWIDTH // 2,
-            2 * WINDOW_HEIGHT // 3 + TRYAGAINBUTTONHEIGHT // 2,
-        )
+
+    def _load_backgrounds(self):
+        def _load_scaled(path):
+            img = pygame.image.load(path)
+            return pygame.transform.scale(img, (WINDOW_WIDTH, WINDOW_HEIGHT))
+
+        return {
+            ("start", True): _load_scaled("Images/bg_start_light.png"),
+            ("start", False): _load_scaled("Images/bg_start_dark.png"),
+            ("game", True): _load_scaled("Images/bg_light.png"),
+            ("game", False): _load_scaled("Images/bg_night.png"),
+            ("gameover", True): _load_scaled("Images/game_over_light.png"),
+            ("gameover", False): _load_scaled("Images/game_over_dark.png"),
+        }
 
     def draw(self, current_piece, next_pieces, lightmode=True):
         if self.viewtype == ViewType.START:
@@ -113,22 +116,11 @@ class GameDisplay:
         self.lightmode = lightmode
         self.viewtype = viewtype
         if viewtype == ViewType.START:
-            if lightmode:
-                self.bg_img = pygame.image.load("Images/bg_start_light.png")
-            else:
-                self.bg_img = pygame.image.load("Images/bg_start_dark.png")
-            self.bg_img = pygame.transform.scale(
-                self.bg_img, (WINDOW_WIDTH, WINDOW_HEIGHT)
-            )
+            self.bg_img = self._bg_cache[("start", lightmode)]
         elif viewtype == ViewType.GAME:
-            if lightmode:
-                self.bg_img = pygame.image.load("Images/bg_light.png")
-            else:
-                self.bg_img = pygame.image.load("Images/bg_night.png")
-            self.bg_img = pygame.transform.scale(
-                self.bg_img, (WINDOW_WIDTH, WINDOW_HEIGHT)
-            )
+            self.bg_img = self._bg_cache[("game", lightmode)]
         elif viewtype == ViewType.GAMEOVER:
+            self.bg_img = self._bg_cache[("gameover", lightmode)]
             self.draw_game_over_screen(lightmode)
         elif viewtype == ViewType.PAUSE:
             self.draw_pause_screen(lightmode)
@@ -140,7 +132,7 @@ class GameDisplay:
         self.draw_grid()
         self.draw_current_piece(current_piece)
         self.draw_scoreboard()
-        self.draw_pause_button()
+        self.pause_button.draw(self.screen, lightmode)
         self.draw_next_piece(next_pieces)
 
     def draw_next_piece(self, next_pieces):
@@ -166,66 +158,21 @@ class GameDisplay:
             )
 
     def draw_game_over_screen(self, lightmode=True):
-        if lightmode:
-            self.bg_img = pygame.image.load("Images/game_over_light.png")
-        else:
-            self.bg_img = pygame.image.load("Images/game_over_dark.png")
-        self.bg_img = pygame.transform.scale(
-            self.bg_img, (WINDOW_WIDTH, WINDOW_HEIGHT)
-        )
-        self.draw_exit_game(lightmode)
-        self.draw_try_again(lightmode)
-
-    def draw_try_again(self, lightmode):
-        if lightmode:
-            self.screen.blit(
-                self.try_again_img_light,
-                self.try_again_button_coords,
-            )
-        else:
-            self.screen.blit(
-                self.try_again_img_dark,
-                self.try_again_button_coords,
-            )
+        self.bg_img = self._bg_cache[("gameover", lightmode)]
+        self.exit_button.draw(self.screen, lightmode)
+        self.try_again_button.draw(self.screen, lightmode)
 
     def draw_start_screen(self, lightmode):
         self.screen.blit(self.bg_img, (0, 0))
-        self.draw_start_button()
-
-    def draw_start_button(self):
-        self.start_button_coords = (
-            (WINDOW_WIDTH // 2) - STARTBUTTONWIDTH // 2,
-            2 * WINDOW_HEIGHT // 3 + STARTBUTTONHEIGHT // 2,
-        )
-        self.screen.blit(
-            self.start_button_image,
-            self.start_button_coords,
-        )
-
-    def draw_pause_button(self):
-        self.screen.blit(
-            self.pause_button_image,
-            self.pause_button_coords,
-        )
+        self.start_button.draw(self.screen, lightmode)
 
     def draw_pause_screen(self, lightmode=True):
-        self.draw_continue_game(lightmode)
-
-    def draw_continue_game(self, lightmode=True):
-        self.screen.blit(self.continue_button_img, self.continue_button_coords)
-
-    def draw_exit_game(self, lightmode=True):
-        if lightmode:
-            self.screen.blit(self.exit_button_img_light, self.exit_button_coords)
-        else:
-            self.screen.blit(self.exit_button_img_dark, self.exit_button_coords)
+        self.continue_button.draw(self.screen, lightmode)
 
     def draw_grid(self):
         x_offset = (WINDOW_WIDTH - GAME_WIDTH) // 2
         y_offset = 0
-        grid = pygame.image.load("Images/bg_grid.png")
-        grid = pygame.transform.scale(grid, (GAME_WIDTH, GAME_HEIGHT))
-        self.screen.blit(grid, (x_offset, y_offset))
+        self.screen.blit(self._grid_img, (x_offset, y_offset))
         for x in range(NBOXES_HORIZONTAL):
             for y in range(NBOXES_VERTICAL):
                 if self.board[x][y] != 0:
@@ -249,7 +196,7 @@ class GameDisplay:
     def draw_block(self, color, pos):
         image = self.block_images.get(color, self._make_fallback_surface(color))
         image = pygame.transform.scale(image, (BOX_WIDTH, BOX_HEIGHT))
-        SCREEN.blit(image, pos)
+        self.screen.blit(image, pos)
 
     @staticmethod
     def _make_fallback_surface(color):
@@ -271,7 +218,6 @@ class GameDisplay:
                 images[color] = pygame.image.load(path)
             except (pygame.error, FileNotFoundError):
                 images[color] = self._make_fallback_surface(color)
-        # Auto-generate fallback surfaces for colors without image files
         for color in (ORANGE, PURPLE):
             if color not in images:
                 images[color] = self._make_fallback_surface(color)
@@ -297,16 +243,16 @@ class GameDisplay:
         return self.viewtype
 
     def get_start_button_data(self):
-        return self.start_button_coords, self.start_button_image.get_size()
+        return self.start_button.get_data()
 
     def get_pause_button_data(self):
-        return self.pause_button_coords, self.pause_button_image.get_size()
+        return self.pause_button.get_data()
 
     def get_continue_button_data(self):
-        return self.continue_button_coords, self.continue_button_img.get_size()
+        return self.continue_button.get_data()
 
     def get_exit_button_data(self):
-        return self.exit_button_coords, self.exit_button_img_light.get_size()
+        return self.exit_button.get_data()
 
     def get_try_again_button_data(self):
-        return self.try_again_button_coords, self.try_again_img_light.get_size()
+        return self.try_again_button.get_data()

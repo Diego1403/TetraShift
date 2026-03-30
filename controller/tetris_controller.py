@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import time
+from typing import Any, TYPE_CHECKING
 
 import pygame
 import cv2
@@ -7,30 +10,40 @@ import dlib
 
 from data.enums import Direction, ViewType
 
+if TYPE_CHECKING:
+    from model.game_logic import GameLogic
+    from view.game_display import GameDisplay
+
+ButtonData = tuple[tuple[int, int], tuple[int, int]]
+
 
 class TetrisController:
-    def __init__(self, gamelogic, view):
-        self.BLINK_THRESHOLD = 6
-        self.BLINK_TIME = 1
-        self.LEFT_THRESHOLD = 3
-        self.RIGHT_THRESHOLD = 0.4
+    """Handles keyboard, mouse, and eye-tracking input."""
+
+    def __init__(self, gamelogic: GameLogic, view: GameDisplay) -> None:
+        self.BLINK_THRESHOLD: float = 6.0
+        self.BLINK_TIME: float = 1.0
+        self.LEFT_THRESHOLD: float = 3.0
+        self.RIGHT_THRESHOLD: float = 0.4
 
         self.gamelogic = gamelogic
         self.view = view
-        self.view_type = ViewType.START
-        self.eye_detection = True
+        self.view_type: ViewType = ViewType.START
+        self.eye_detection: bool = True
 
         if self.eye_detection:
             self.init_gaze_tracking()
-        self.blink_start_time = 0
+        self.blink_start_time: float = 0
 
-    def init_gaze_tracking(self):
+    def init_gaze_tracking(self) -> None:
+        """Initialize webcam and dlib face/landmark detectors."""
         self.cap = cv2.VideoCapture(0)
         self.detector = dlib.get_frontal_face_detector()
         self.predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
         self.font = cv2.FONT_HERSHEY_SIMPLEX
 
-    def handle_event(self):
+    def handle_event(self) -> None:
+        """Process all pending input events for one frame."""
         if self.eye_detection:
             self.gamelogic.set_direction(self.check_gaze_direction())
         for event in pygame.event.get():
@@ -72,7 +85,10 @@ class TetrisController:
                     event, self.view.get_try_again_button_data(), "tryAgainButton"
                 )
 
-    def check_button_click(self, event, button, tipo):
+    def check_button_click(
+        self, event: pygame.event.Event, button: ButtonData, tipo: str
+    ) -> None:
+        """Check if *event* is a click inside *button* and dispatch the action."""
         button_coords = button[0]
         button_rect = button[1]
         button_x = button_coords[0]
@@ -111,7 +127,8 @@ class TetrisController:
                         ViewType.GAME, self.gamelogic.light_mode
                     )
 
-    def check_gaze_direction(self):
+    def check_gaze_direction(self) -> Direction:
+        """Read one camera frame and return the detected gaze direction."""
         self._, self.frame = self.cap.read()
         self.gray = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
         self.faces = self.detector(self.gray)
@@ -170,7 +187,8 @@ class TetrisController:
         cv2.imshow("Frame", self.frame)
         return d
 
-    def get_gaze_ratio(self, eye_points, facial_landmarks):
+    def get_gaze_ratio(self, eye_points: list[int], facial_landmarks: Any) -> float:
+        """Calculate the left/right white-pixel ratio for gaze detection."""
         left_eye_region = np.array(
             [
                 (
@@ -220,20 +238,21 @@ class TetrisController:
         right_side_white = cv2.countNonZero(right_side_threshold)
 
         if left_side_white == 0:
-            gaze_ratio = 1
+            gaze_ratio = 1.0
         elif right_side_white == 0:
-            gaze_ratio = 5
+            gaze_ratio = 5.0
         else:
             gaze_ratio = left_side_white / right_side_white
         return gaze_ratio
 
-    def midpoint(self, p1, p2):
+    def midpoint(self, p1: Any, p2: Any) -> tuple[int, int]:
         return int((p1.x + p2.x) / 2), int((p1.y + p2.y) / 2)
 
-    def hypot(self, x, y):
+    def hypot(self, x: int | float, y: int | float) -> int:
         return int(np.sqrt(x * x + y * y))
 
-    def get_blinking_ratio(self, eye_points, facial_landmarks):
+    def get_blinking_ratio(self, eye_points: list[int], facial_landmarks: Any) -> float:
+        """Calculate the horizontal/vertical line ratio to detect blinks."""
         left_point = (
             facial_landmarks.part(eye_points[0]).x,
             facial_landmarks.part(eye_points[0]).y,
@@ -248,8 +267,8 @@ class TetrisController:
         center_bottom = self.midpoint(
             facial_landmarks.part(eye_points[5]), facial_landmarks.part(eye_points[4])
         )
-        hor_line = cv2.line(self.frame, left_point, right_point, (0, 255, 0), 2)
-        ver_line = cv2.line(self.frame, center_top, center_bottom, (0, 255, 0), 2)
+        cv2.line(self.frame, left_point, right_point, (0, 255, 0), 2)
+        cv2.line(self.frame, center_top, center_bottom, (0, 255, 0), 2)
         hor_line_length = self.hypot(
             (left_point[0] - right_point[0]), (left_point[1] - right_point[1])
         )

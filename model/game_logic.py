@@ -1,49 +1,70 @@
+from __future__ import annotations
+
 import queue
+from typing import Literal
 
 import pygame
 
+from model.block import Block
 from model.tetris_piece import TetrisPiece
 from model.piece_factory import PieceFactory
 from view.game_display import GameDisplay
 from controller.tetris_controller import TetrisController
-from data.colors import BLACK
+from data.colors import Color, BLACK
 from data.enums import ViewType, Direction
 from data.config import NBOXES_HORIZONTAL, NBOXES_VERTICAL
 
+CellValue = Color | Literal[0]
+Grid = list[list[CellValue]]
+
 
 class GameLogic:
-    def __init__(self, screen, clock):
-        self.screen = screen
-        self.clock = clock
+    """Core game state and logic for Tetris."""
+
+    def __init__(self, screen: pygame.Surface, clock: pygame.time.Clock) -> None:
+        self.screen: pygame.Surface = screen
+        self.clock: pygame.time.Clock = clock
 
         pygame.mixer.init()
 
+        self.score: int = 0
+        self.grid: Grid = []
+        self.exit_game: bool = False
+        self.pause: bool = False
+        self.dir: Direction = Direction.NONE
+        self.light_mode: bool = True
+        self.current_view_type: ViewType = ViewType.START
+
         self.reset_game()
-        self.full_row_sound = pygame.mixer.Sound("audio/full_row.mp3")
-        self.gameover_sound = pygame.mixer.Sound("audio/game_over.mp3")
+        self.full_row_sound: pygame.mixer.Sound = pygame.mixer.Sound("audio/full_row.mp3")
+        self.gameover_sound: pygame.mixer.Sound = pygame.mixer.Sound("audio/game_over.mp3")
         pygame.mixer.music.load("audio/music.mp3")
         self.change_view_type(ViewType.START, self.light_mode)
 
         self.screen.fill(BLACK)
 
-    def handle_event(self):
+    def handle_event(self) -> None:
         self.controller.handle_event()
 
-    def change_view_type(self, viewtype, lightmode):
+    def change_view_type(self, viewtype: ViewType, lightmode: bool) -> None:
         self.current_view_type = viewtype
         self.light_mode = lightmode
         self.view.set_view_type(self.current_view_type, self.light_mode)
 
-    def set_direction(self, direction):
+    def set_direction(self, direction: Direction) -> None:
+        """Set the current movement direction."""
         self.dir = direction
 
-    def set_paused(self, paused):
+    def set_paused(self, paused: bool) -> None:
+        """Pause or unpause the game."""
         self.pause = paused
 
-    def request_exit(self):
+    def request_exit(self) -> None:
+        """Request the game loop to exit."""
         self.exit_game = True
 
-    def play(self):
+    def play(self) -> None:
+        """Run the main game loop."""
         pygame.mixer.music.play(-1)
         while not self.exit_game:
             self.handle_event()
@@ -58,17 +79,18 @@ class GameLogic:
             pygame.display.update()
             pygame.display.flip()
 
-    def check_game_events(self):
+    def check_game_events(self) -> None:
         self.check_for_full_rows()
         self.view.update_score(self.score)
 
-    def clear_last_pos(self):
+    def clear_last_pos(self) -> None:
+        """Erase the current piece from the grid."""
         blocks = self.current_piece.blocks
         for pos in blocks:
             if pos.get_y() < NBOXES_VERTICAL:
                 self.grid[pos.x][pos.get_y()] = 0
 
-    def can_go_down(self, blocks):
+    def can_go_down(self, blocks: list[Block]) -> bool:
         lowest_y = self.current_piece.get_lowest_height()
         can_go = True
         if lowest_y >= NBOXES_VERTICAL - 1:
@@ -83,7 +105,8 @@ class GameLogic:
                         break
         return can_go
 
-    def reset_game(self):
+    def reset_game(self) -> None:
+        """Reset all game state for a new game."""
         self.score = 0
         self.grid = []
         self.exit_game = False
@@ -96,19 +119,19 @@ class GameLogic:
             for y in range(NBOXES_VERTICAL):
                 self.grid[x].append(0)
 
-        self.next_pieces = queue.Queue(5)
+        self.next_pieces: queue.Queue[TetrisPiece] = queue.Queue(5)
         for _ in range(5):
             self.next_pieces.put(PieceFactory.create_random())
 
         new = self.next_pieces.get()
-        self.current_piece = TetrisPiece(new.blocks, new.color)
-        self.view = GameDisplay(self.grid, self.current_piece, self.screen)
-        self.controller = TetrisController(self, self.view)
+        self.current_piece: TetrisPiece = TetrisPiece(new.blocks, new.color)
+        self.view: GameDisplay = GameDisplay(self.grid, self.current_piece, self.screen)
+        self.controller: TetrisController = TetrisController(self, self.view)
         self.dir = Direction.NONE
         self.change_view_type(ViewType.GAME, self.light_mode)
         self.screen.fill(BLACK)
 
-    def can_go_left(self, blocks):
+    def can_go_left(self, blocks: list[Block]) -> bool:
         most_left = self.current_piece.get_most_left()
         can_go = True
         if most_left <= 0:
@@ -121,7 +144,7 @@ class GameLogic:
                         break
         return can_go
 
-    def can_go_right(self, blocks):
+    def can_go_right(self, blocks: list[Block]) -> bool:
         most_right = self.current_piece.get_most_right()
         can_go = True
         if most_right >= NBOXES_HORIZONTAL - 1:
@@ -134,7 +157,7 @@ class GameLogic:
                         break
         return can_go
 
-    def can_rotate(self, blocks):
+    def can_rotate(self, blocks: list[Block]) -> bool:
         can_rot = True
         for pos in blocks:
             if pos.x < 0 or pos.x > NBOXES_HORIZONTAL - 1:
@@ -151,7 +174,8 @@ class GameLogic:
                 break
         return can_rot
 
-    def process_movement(self):
+    def process_movement(self) -> None:
+        """Handle one frame of piece movement based on the current direction."""
         self.clear_last_pos()
         blocks = self.current_piece.blocks
         if self.can_go_down(blocks):
@@ -180,7 +204,8 @@ class GameLogic:
                     self.current_piece.move_down()
             self.dir = Direction.NONE
 
-    def set_new_piece(self):
+    def set_new_piece(self) -> None:
+        """Lock the current piece and spawn a new one."""
         if self.current_piece.get_most_top() == 0:
             self.pause = True
             self.change_view_type(ViewType.GAMEOVER, self.light_mode)
@@ -194,8 +219,9 @@ class GameLogic:
         new_piece = self.next_pieces.get()
         self.current_piece = TetrisPiece(new_piece.blocks, new_piece.color)
 
-    def check_for_full_rows(self):
-        rows_to_delete = []
+    def check_for_full_rows(self) -> None:
+        """Clear completed rows and shift blocks down."""
+        rows_to_delete: list[int] = []
         for y in range(NBOXES_VERTICAL):
             row_complete = True
             for x in range(NBOXES_HORIZONTAL):

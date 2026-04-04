@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import queue
+from pathlib import Path
 
 import pygame
 
@@ -47,7 +48,7 @@ class GameDisplay:
         self._bg_cache: dict[tuple[str, bool], pygame.Surface] = self._load_backgrounds()
         self.bg_img: pygame.Surface = self._bg_cache[("start", True)]
 
-        self._grid_img: pygame.Surface = pygame.image.load("Images/bg_grid.png")
+        self._grid_img: pygame.Surface = self._safe_load_image("Images/bg_grid.png")
         self._grid_img = pygame.transform.scale(self._grid_img, (GAME_WIDTH, GAME_HEIGHT))
 
         self.block_images: dict[Color, pygame.Surface] = self._load_block_images()
@@ -86,23 +87,38 @@ class GameDisplay:
         )
 
     @staticmethod
+    def _safe_load_image(path: str, fallback_color: Color = WHITE) -> pygame.Surface:
+        """Load an image from *path*, returning a colored surface on failure."""
+        try:
+            return pygame.image.load(str(Path(path)))
+        except (pygame.error, FileNotFoundError) as exc:
+            print(f"Warning: could not load {path} ({exc})")
+            surface = pygame.Surface((BOX_WIDTH, BOX_HEIGHT))
+            surface.fill(fallback_color)
+            return surface
+
+    @staticmethod
     def _make_button(
         light_path: str,
         dark_path: str | None,
         size: tuple[int, int],
         coords: tuple[int, int],
     ) -> UIButton:
-        light_img = pygame.transform.scale(pygame.image.load(light_path), size)
+        light_img = pygame.transform.scale(
+            GameDisplay._safe_load_image(light_path), size
+        )
         dark_img: pygame.Surface | None = None
         if dark_path:
-            dark_img = pygame.transform.scale(pygame.image.load(dark_path), size)
+            dark_img = pygame.transform.scale(
+                GameDisplay._safe_load_image(dark_path), size
+            )
         return UIButton(
             image_light=light_img, image_dark=dark_img, coords=coords, size=size,
         )
 
     def _load_backgrounds(self) -> dict[tuple[str, bool], pygame.Surface]:
         def _load_scaled(path: str) -> pygame.Surface:
-            img = pygame.image.load(path)
+            img = self._safe_load_image(path)
             return pygame.transform.scale(img, (WINDOW_WIDTH, WINDOW_HEIGHT))
 
         return {
@@ -241,10 +257,7 @@ class GameDisplay:
         }
         images: dict[Color, pygame.Surface] = {}
         for color, path in color_files.items():
-            try:
-                images[color] = pygame.image.load(path)
-            except (pygame.error, FileNotFoundError):
-                images[color] = self._make_fallback_surface(color)
+            images[color] = self._safe_load_image(path, fallback_color=color)
         for color in (ORANGE, PURPLE):
             if color not in images:
                 images[color] = self._make_fallback_surface(color)

@@ -18,6 +18,7 @@ from data.config import (
     CONTINUEBUTTONWIDTH, CONTINUEBUTTONHEIGHT,
     EXITBUTTONWIDTH, EXITBUTTONHEIGHT,
     TRYAGAINBUTTONWIDTH, TRYAGAINBUTTONHEIGHT,
+    NEXT_PIECE_CELL_SIZE, FONT_NAME,
 )
 from view.ui_button import UIButton
 
@@ -42,7 +43,7 @@ class GameDisplay:
         self.current_piece = current_piece
         self.score: int = 0
         self.screen: pygame.Surface = screen
-        self.font: pygame.font.Font = pygame.font.SysFont("comicsansms", 30)
+        self.font: pygame.font.Font = pygame.font.SysFont(FONT_NAME, 30)
         self.viewtype: ViewType = ViewType.START
 
         self._bg_cache: dict[tuple[str, bool], pygame.Surface] = self._load_backgrounds()
@@ -182,7 +183,7 @@ class GameDisplay:
 
     def draw_piece(self, piece: TetrisPiece, i: int) -> None:
         """Draw a preview piece in the queue panel."""
-        cell_size = 15
+        cell_size = NEXT_PIECE_CELL_SIZE
         for block in piece.blocks:
             pygame.draw.rect(
                 self.screen,
@@ -270,7 +271,7 @@ class GameDisplay:
         x_offset = 120
         y_offset = 120
         pygame.draw.rect(self.screen, WHITE, [0, 0, 50, WINDOW_HEIGHT], 5)
-        font = pygame.font.SysFont("comicsansms", 16)
+        font = pygame.font.SysFont(FONT_NAME, 16)
         text = font.render("{}".format(self.score), True, (255, 255, 255))
         text_rect = text.get_rect()
         text_rect.center = (SCOREBOARD_WIDTH, SCOREBOARD_HEIGHT)

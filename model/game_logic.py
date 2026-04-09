@@ -12,7 +12,10 @@ from view.game_display import GameDisplay
 from controller.tetris_controller import TetrisController
 from data.colors import Color, BLACK
 from data.enums import ViewType, Direction
-from data.config import NBOXES_HORIZONTAL, NBOXES_VERTICAL
+from data.config import (
+    NBOXES_HORIZONTAL, NBOXES_VERTICAL, GAME_FPS,
+    PIECE_DROP_SPEED, FAST_DROP_SPEED, SCORE_PER_ROW,
+)
 
 CellValue = Color | Literal[0]
 Grid = list[list[CellValue]]
@@ -74,7 +77,7 @@ class GameLogic:
                 self.check_game_events()
             else:
                 pygame.mixer.music.pause()
-            self.clock.tick(30)
+            self.clock.tick(GAME_FPS)
             self.view.draw(self.current_piece, self.next_pieces, self.light_mode)
             pygame.display.update()
             pygame.display.flip()
@@ -179,10 +182,10 @@ class GameLogic:
         self.clear_last_pos()
         blocks = self.current_piece.blocks
         if self.can_go_down(blocks):
-            self.current_piece.move_down()
+            self.current_piece.move_down(PIECE_DROP_SPEED)
         if self.dir == Direction.DOWN:
             if self.can_go_down(blocks):
-                self.current_piece.move_down(1)
+                self.current_piece.move_down(FAST_DROP_SPEED)
                 self.dir = Direction.NONE
             else:
                 self.set_new_piece()
@@ -231,7 +234,7 @@ class GameLogic:
             if row_complete:
                 self.full_row_sound.play()
                 rows_to_delete.append(y)
-                self.score += 10
+                self.score += SCORE_PER_ROW
 
         for y in rows_to_delete:
             for x in range(NBOXES_HORIZONTAL):

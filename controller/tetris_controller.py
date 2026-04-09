@@ -7,15 +7,17 @@ import pygame
 import numpy as np
 
 from data.enums import Direction, ViewType
+from data.config import (
+    DEFAULT_BLINK_THRESHOLD, DEFAULT_BLINK_DURATION,
+    DEFAULT_LEFT_GAZE_THRESHOLD, DEFAULT_RIGHT_GAZE_THRESHOLD,
+    GAZE_COOLDOWN_FRAMES, BLINK_COOLDOWN_FRAMES, GAME_FPS,
+)
 
 if TYPE_CHECKING:
     from model.game_logic import GameLogic
     from view.game_display import GameDisplay
 
 ButtonData = tuple[tuple[int, int], tuple[int, int]]
-
-GAZE_COOLDOWN_FRAMES = 6
-BLINK_COOLDOWN_FRAMES = 30
 
 MODEL_PATH = Path("shape_predictor_68_face_landmarks.dat")
 
@@ -24,10 +26,10 @@ class TetrisController:
     """Handles keyboard, mouse, and eye-tracking input."""
 
     def __init__(self, gamelogic: GameLogic, view: GameDisplay) -> None:
-        self.BLINK_THRESHOLD: float = 6.0
-        self.BLINK_TIME: float = 1.0
-        self.LEFT_THRESHOLD: float = 3.0
-        self.RIGHT_THRESHOLD: float = 0.4
+        self.BLINK_THRESHOLD: float = DEFAULT_BLINK_THRESHOLD
+        self.BLINK_TIME: float = DEFAULT_BLINK_DURATION
+        self.LEFT_THRESHOLD: float = DEFAULT_LEFT_GAZE_THRESHOLD
+        self.RIGHT_THRESHOLD: float = DEFAULT_RIGHT_GAZE_THRESHOLD
 
         self.gamelogic = gamelogic
         self.view = view
@@ -190,7 +192,7 @@ class TetrisController:
                     self.blink_start_frame = self.frame_count
                 else:
                     elapsed = self.frame_count - self.blink_start_frame
-                    if elapsed >= self.BLINK_TIME * 30:
+                    if elapsed >= self.BLINK_TIME * GAME_FPS:
                         d = Direction.ROTATE
                         self.gaze_cooldown = BLINK_COOLDOWN_FRAMES
                         cv2.imshow("Frame", frame)

@@ -1,0 +1,17 @@
+Color = tuple[int, int, int]
+
+BLACK: Color = (0, 0, 0)
+WHITE: Color = (200, 200, 200)
+GREEN: Color = (0, 255, 0)
+RED: Color = (255, 0, 0)
+PINK: Color = (255, 31, 139)
+YELLOW: Color = (255, 255, 0)
+BLUE: Color = (0, 0, 255)
+ORANGE: Color = (255, 165, 0)
+PURPLE: Color = (128, 0, 128)
+BROWN: Color = (165, 42, 42)
+DARK_GREEN: Color = (0, 100, 0)
+DARK_BLUE: Color = (0, 0, 128)
+DARK_RED: Color = (139, 0, 0)
+LIGHT_BLUE: Color = (173, 216, 230)
+LIGHT_GREEN: Color = (144, 238, 144)

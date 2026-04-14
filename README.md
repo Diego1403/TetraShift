@@ -6,9 +6,6 @@ Move pieces with your gaze, rotate them with a blink, or fall back to the keyboa
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 
-## Demo
-
-https://github.com/Diego1403/TetraShift/assets/36863909/79129650-df11-4d01-8c1d-96c56674e45b
 
 ## Features
 

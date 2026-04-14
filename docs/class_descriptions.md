@@ -2,49 +2,71 @@
 
 ### TetrisController
 
-`TetrisController` is the main class responsible for handling input from the user, both from the keyboard and through gaze and blink detection. It includes the following methods:
+`TetrisController` handles all user input: keyboard, mouse buttons, and optional eye-tracking via gaze and blink detection.
 
-- `__init__(self, gamelogic, view)`: Initializes the TetrisController with the given gamelogic and view objects. Also sets up gaze tracking and blink detection.
-- `init_gaze_tracking(self)`: Initializes gaze tracking by setting up the necessary objects and models.
-- `handle_event(self)`: Handles user input events, such as gaze direction, blinks, and keyboard inputs.
-- `check_button(self, event, Button, tipo)`: Checks if a button in the game's user interface has been clicked and performs the corresponding action.
-- `check_gaze_direction(self)`: Determines the user's gaze direction and returns the corresponding movement direction.
-- `get_gaze_ratio(self, eye_points, facial_landmarks)`: Calculates the gaze ratio for the specified eye points.
-- `midpoint(self, p1, p2)`: Calculates the midpoint between two points.
-- `hypot(self, x, y)`: Calculates the distance between two points.
-- `get_blinking_ratio(self, eye_points, facial_landmarks)`: Calculates the blinking ratio for the specified eye points.
+- `__init__(self, gamelogic, view)`: Initialise with references to `GameLogic` and `GameDisplay`. Attempts to set up eye tracking; falls back to keyboard-only on failure.
+- `_init_gaze_tracking(self) -> bool`: Try to open the webcam and load the dlib model. Returns `False` if anything is unavailable.
+- `cleanup(self)`: Release the camera if it was opened.
+- `handle_event(self)`: Process one frame of input — gaze (with cooldown), keyboard, and mouse button clicks.
+- `check_button_click(self, event, button, tipo)`: Hit-test a UI button and dispatch the appropriate action.
+- `_check_gaze_direction(self) -> Direction`: Read a camera frame and return the detected gaze direction.
+- `_get_gaze_ratio(self, eye_points, facial_landmarks) -> float`: Calculate the left/right white-pixel ratio for one eye.
+- `_get_blinking_ratio(self, eye_points, facial_landmarks) -> float`: Calculate the horizontal/vertical line ratio to detect blinks.
 
-### Gamelogic
+### GameLogic
 
-The `Gamelogic` class is the centerpiece of the TetraShift game. It is responsible for handling the logic and state of the game, including moving pieces, checking for game events like completed lines, and managing the game state such as the score and the grid. Here's a breakdown of the main functions and their roles:
+`GameLogic` owns all game state and orchestrates one frame of gameplay.
 
-- `__init__(self)`: The constructor of the class, which initializes and sets up the game. It sets up the pygame mixer for sound effects and music, calls `reset_game()` to initialize the game state, and then sets up the display and controller for the game.
-- `handle_event(self)`: This function delegates the handling of events to the controller.
-- `changeViewType(self, viewtype, lightmode)`: Changes the view type based on the provided `viewtype` and `lightmode` parameters. It also updates the game's current view type and light mode.
-- `play(self)`: The main game loop. It handles events, checks for game events, and updates the display, while the game is not set to exit.
-- `check_events(self)`: Checks for game events, such as completed lines, and updates the score.
-- `clearLastPos(self)`: This method clears the last position of the current piece on the grid.
-- `can_go_down(self, blocks)`, `can_go_left(self, blocks)`, `can_go_right(self, blocks)`, `can_rotate(self, blocks)`: These functions check if the current piece can move down, left, right or be rotated, respectively, based on the current state of the grid and the blocks of the piece.
-- `reset_game(self)`: Resets the game state. This includes the score, the game grid, and the state variables like `exitGame` and `pause`. It also initializes the queue of next pieces and sets the current piece.
-- `move_events(self)`: Handles the movement of the current piece based on the user's input and the game state. It clears the last position of the piece
-- `setNewPiece(self)`: Replaces the current piece with a new one from the queue of next pieces. If the new piece cannot be placed on the grid (because it overlaps with existing blocks), the game is set to pause and the game over view is displayed.
-- `checkForFullRows(self)`: Checks for completed rows on the grid. If a row is complete, it is removed from the grid, and the rows above it are moved down. The score is also updated.
+- `__init__(self, screen, clock)`: Receive the pygame `Surface` and `Clock` via dependency injection. Initialise audio, game state, and sub-objects.
+- `play(self)`: Main game loop — handles events, processes movement, checks rows, and renders.
+- `change_view_type(self, viewtype, lightmode)`: Switch the active view (START, GAME, PAUSE, GAMEOVER).
+- `set_direction(self, direction)`: Set the pending movement direction (called by the controller).
+- `set_paused(self, paused)`: Pause or unpause the game.
+- `request_exit(self)`: Signal the game loop to stop.
+- `reset_game(self)`: Reinitialise all state for a new game.
+- `process_movement(self)`: Handle one frame of piece movement based on the current direction.
+- `set_new_piece(self)`: Lock the current piece into the grid and spawn the next one.
+- `check_for_full_rows(self)`: Clear completed rows and shift blocks down.
+- `can_go_down / can_go_left / can_go_right / can_rotate`: Collision checks.
+
+### PieceFactory
+
+`PieceFactory` is a static factory for creating random `TetrisPiece` instances.
+
+- `create_random() -> TetrisPiece`: Return a new random piece.
+
+### TetrisPiece
+
+`TetrisPiece` represents a four-block Tetris shape with a shared colour.
+
+- `move_left / move_right / move_down(speed)`: Translate the piece.
+- `rotate()`: Rotate 90 degrees clockwise around the centre.
+- `get_lowest_height / get_most_left / get_most_right / get_most_top`: Boundary queries.
+
+### Block
+
+`Block` represents a single cell position.
+
+- `go_down(speed) / go_left() / go_right()`: Move the cell.
+- `get_y() -> int`: Return the y-coordinate rounded up.
 
 ### GameDisplay
 
-The `GameDisplay` class defines the game display or user interface of the game. Here's an overview of the various components:
+`GameDisplay` handles all rendering of the Tetris UI.
 
-- \***\*init**(self, board, currentPiece):\*\* The constructor for the `GameDisplay` class. The `board` and `currentPiece` parameters are the game board and the current game piece being manipulated by the player. It also initializes various other attributes such as the game's display, score, and images to be used in the display.-
-- **draw(self, currentPiece, nextPieces, lightmode=True):** This method draws the game on the screen depending on the current state of the game (e.g. start, during the game, game over, pause). It calls appropriate draw methods based on the `viewtype`.-
-- **setViewType(self, viewtype, lightmode):** This method is used to set the current state of the game view.-
-- **drawGame(self, currentPiece, nextPieces, lightmode):** This method draws the game screen when the game is in progress. It includes the game screen, grid, current piece, scoreboard, pause button, and the next piece.-
-- **drawGameOverScreen(self, lightmode=True):** This method is called when the game is over. It loads and displays the game over screen, the 'try again' button, and the 'exit game' button.-
-- **drawStartScreen(self, lightmode):** This method is used to draw the start screen when the game is first opened.-
-- **drawPauseScreen(self, lightmode=True):** This method is used to draw the pause screen when the game is paused.-
-- **drawBlock(self, color, pos):** This method is used to draw a block of a particular color at a particular position on the game board.-
-- **drawScoreboard(self):** This method is used to draw the scoreboard on the screen.-
-- **updateScore(self, score):** This method is used to update the score of the game.-
-- **get_ViewType(self):** This method returns the current view type of the game.-
-- The remaining `get_` methods are used to get the positions and sizes of the various buttons used in the game.
+- `__init__(self, board, current_piece, screen)`: Receive the grid, current piece, and injected `Surface`. Pre-load and cache all backgrounds, block images, and UI buttons.
+- `draw(self, current_piece, next_pieces, lightmode)`: Render one frame based on the active view type.
+- `set_view_type(self, viewtype, lightmode)`: Switch background and active view.
+- `draw_game / draw_start_screen / draw_pause_screen / draw_game_over_screen`: View-specific rendering.
+- `draw_grid()`: Render the grid background and all locked blocks.
+- `draw_block(self, color, pos)`: Draw a single block using cached images with auto-generated fallbacks.
+- `update_score(self, score)`: Update the displayed score.
+- `get_view_type()`: Return the current `ViewType`.
+- `get_*_button_data()`: Return `(coords, size)` tuples for hit-testing.
 
-In addition, this class also loads images and transforms them to the appropriate sizes for use in the game. These images are used for different blocks, buttons, and backgrounds in the game.
+### UIButton
+
+`UIButton` is a dataclass for themed buttons with light/dark images.
+
+- `draw(self, screen, light_mode)`: Blit the appropriate theme image.
+- `get_data()`: Return `(coords, size)` for hit-testing.

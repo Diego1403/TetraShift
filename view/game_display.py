@@ -3,7 +3,7 @@ import pygame
 from data.colors import (
     BLACK, WHITE, RED, BLUE, GREEN, YELLOW, PINK, PURPLE, ORANGE,
 )
-from data.enums import ViewType, Direction
+from data.enums import ViewType
 from data.config import (
     WINDOW_WIDTH, WINDOW_HEIGHT, GAME_WIDTH, GAME_HEIGHT,
     BOX_WIDTH, BOX_HEIGHT, MARGIN, NBOXES_HORIZONTAL, NBOXES_VERTICAL,
@@ -21,13 +21,9 @@ class GameDisplay:
     def __init__(self, board, current_piece):
         self.board = board
         self.current_piece = current_piece
-        self.game_over = False
         self.score = 0
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
         self.font = pygame.font.SysFont("comicsansms", 30)
-
-        self.dir = Direction.NONE
-        self.score_font = pygame.font.SysFont("comicsansms", 30)
         self.bg_img = pygame.image.load("Images/bg_light.png")
         self.pause_screen_dark_image = pygame.image.load(
             "Images/pause_screen_dark.png"
@@ -51,11 +47,7 @@ class GameDisplay:
             "Images/try_again_button_light.png"
         )
 
-        self.redblock = pygame.image.load("Images/blocks/redblock.jpg")
-        self.blueblock = pygame.image.load("Images/blocks/blueblock.jpg")
-        self.greenblock = pygame.image.load("Images/blocks/greenblock.jpg")
-        self.pinkblock = pygame.image.load("Images/blocks/pinkblock.jpg")
-        self.yellowblock = pygame.image.load("Images/blocks/yellowblock.jpg")
+        self.block_images = self._load_block_images()
 
         self.start_button_image = pygame.transform.scale(
             self.start_button_image,
@@ -255,20 +247,35 @@ class GameDisplay:
             self.draw_block(current_piece.color, pos)
 
     def draw_block(self, color, pos):
-        block = self.redblock
-        if color == RED:
-            block = self.redblock
-        elif color == BLUE:
-            block = self.blueblock
-        elif color == GREEN:
-            block = self.greenblock
-        elif color == YELLOW:
-            block = self.yellowblock
-        elif color == PURPLE:
-            block = self.purpleblock
-
-        image = pygame.transform.scale(block, (BOX_WIDTH, BOX_HEIGHT))
+        image = self.block_images.get(color, self._make_fallback_surface(color))
+        image = pygame.transform.scale(image, (BOX_WIDTH, BOX_HEIGHT))
         SCREEN.blit(image, pos)
+
+    @staticmethod
+    def _make_fallback_surface(color):
+        surface = pygame.Surface((BOX_WIDTH, BOX_HEIGHT))
+        surface.fill(color)
+        return surface
+
+    def _load_block_images(self):
+        color_files = {
+            RED: "Images/blocks/redblock.jpg",
+            BLUE: "Images/blocks/blueblock.jpg",
+            GREEN: "Images/blocks/greenblock.jpg",
+            PINK: "Images/blocks/pinkblock.jpg",
+            YELLOW: "Images/blocks/yellowblock.jpg",
+        }
+        images = {}
+        for color, path in color_files.items():
+            try:
+                images[color] = pygame.image.load(path)
+            except (pygame.error, FileNotFoundError):
+                images[color] = self._make_fallback_surface(color)
+        # Auto-generate fallback surfaces for colors without image files
+        for color in (ORANGE, PURPLE):
+            if color not in images:
+                images[color] = self._make_fallback_surface(color)
+        return images
 
     def draw_screen(self):
         pygame.draw.rect(self.screen, WHITE, [0, 0, WINDOW_WIDTH, WINDOW_HEIGHT], 5)

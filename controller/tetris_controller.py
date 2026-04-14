@@ -125,14 +125,12 @@ class TetrisController:
                 [42, 43, 44, 45, 46, 47], landmarks
             )
 
-            print("blinkratio", (right_eye_ratio + left_eye_ratio) / 2)
             if (right_eye_ratio + left_eye_ratio) / 2 > self.BLINK_THRESHOLD:
                 if self.blink_start_time == 0:
                     self.blink_start_time = time.time()
                 else:
                     if time.time() - self.blink_start_time >= self.BLINK_TIME:
                         d = Direction.ROTATE
-                        print("rotate")
                         time.sleep(1)
                         return d
             else:
@@ -145,8 +143,6 @@ class TetrisController:
                 [42, 43, 44, 45, 46, 47], landmarks
             )
             gaze_ratio = (gaze_ratio_right_eye + gaze_ratio_left_eye) / 2
-            new_frame = np.zeros((500, 500, 3), np.uint8)
-            print("gaze ratio:", gaze_ratio)
             if gaze_ratio <= self.RIGHT_THRESHOLD:
                 cv2.putText(
                     self.frame, "RIGHT", (50, 100), self.font, 2, (0, 0, 255), 3
@@ -163,7 +159,6 @@ class TetrisController:
                 d = Direction.NONE
                 break
             else:
-                new_frame[:] = (255, 0, 0)
                 cv2.putText(
                     self.frame, "LEFT", (50, 100), self.font, 2, (0, 0, 255), 3
                 )
